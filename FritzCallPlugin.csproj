@@ -74,6 +74,10 @@
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="libs/tapo-devices/Src/TapoDevices/TapoDevices.csproj" />
+  </ItemGroup>
 
    <ItemGroup>
     <Page Include="Properties\DesignTimeResources.xaml" Condition="'$(DesignTime)'=='true' OR ('$(SolutionPath)'!='' AND Exists('$(SolutionPath)') AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true')">
