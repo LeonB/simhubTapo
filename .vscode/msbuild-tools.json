@@ -1,5 +1,5 @@
 {
-    "solution": "${workspaceRoot}/FritzCall.sln",
+    "solution": "${workspaceRoot}/TapoPlugin.sln",
     "variables": {
         "MSBUILD": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
         "DEVENV": "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/devenv.com"

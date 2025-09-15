@@ -3,12 +3,12 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 
-[assembly: AssemblyTitle("FritzCall")]
-[assembly: AssemblyDescription("Simhub Plugin to toggle AVM Fritz DECT 200")]
+[assembly: AssemblyTitle("Tapo")]
+[assembly: AssemblyDescription("Simhub Plugin to toggle Tapo smart plugs")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("FritzCall")]
-[assembly: AssemblyCopyright("Copyright ©  2021")]
+[assembly: AssemblyProduct("Tapo")]
+[assembly: AssemblyCopyright("Copyright © 2024")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

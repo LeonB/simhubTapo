@@ -10,12 +10,12 @@ using System.Net;
 using System.Security.Cryptography;
 using System.IO;
 
-namespace Argo.FritzCall
+namespace LeonB.Tapo
 {
-    [PluginDescription("Fritz! DECT200 Plugin")]
-    [PluginAuthor("Argo")]
-    [PluginName("FritzCall")]
-    public class FritzCaller : IPlugin, IDataPlugin, IWPFSettings
+    [PluginDescription("Tapo smart plugs Plugin")]
+    [PluginAuthor("LeonB")]
+    [PluginName("Tapo")]
+    public class Tapoer : IPlugin, IDataPlugin, IWPFSettings
     {
 
         public DataPluginDemoSettings Settings;

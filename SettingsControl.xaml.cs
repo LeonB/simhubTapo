@@ -1,20 +1,20 @@
 ﻿using System.Windows.Controls;
 
-namespace Argo.FritzCall
+namespace LeonB.Tapo
 {
     /// <summary>
     /// Logique d'interaction pour SettingsControlDemo.xaml
     /// </summary>
     public partial class SettingsControl : UserControl
     {
-        public FritzCaller Plugin { get; }
+        public Tapoer Plugin { get; }
 
         public SettingsControl()
         {
             InitializeComponent();            
         }
 
-        public SettingsControl(FritzCaller plugin) : this()
+        public SettingsControl(Tapoer plugin) : this()
         {
             this.Plugin = plugin;
             tbUser.Text = Plugin.Settings.Username;
