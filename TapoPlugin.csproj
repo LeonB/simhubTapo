@@ -98,6 +98,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="libs/tapo-devices/Src/TapoDevices/TapoDevices.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Tapo.cs" />
     <Compile Include="TapoSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
