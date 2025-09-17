@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
 
 namespace LeonB.Tapo
 {
@@ -18,8 +19,8 @@ namespace LeonB.Tapo
         {
             this.Plugin = plugin;
             tbUser.Text = Plugin.Settings.Username;
-            tbPassword.Text = Plugin.Settings.Password;
-            tbSAIN.Text = Plugin.Settings.sAIN;
+            tbPassword.Password = Plugin.Settings.Password;
+            tbIP.Text = Plugin.Settings.IP;
         }
 
         private void tbUser_TextChanged(object sender, TextChangedEventArgs e)
@@ -27,14 +28,14 @@ namespace LeonB.Tapo
             Plugin.Settings.Username = tbUser.Text;
         }
 
-        private void tbPassword_TextChanged(object sender, TextChangedEventArgs e)
+        private void tbPassword_PasswordChanged(object sender, RoutedEventArgs e)
         {
-            Plugin.Settings.Password = tbPassword.Text;
+            Plugin.Settings.Password = tbPassword.Password;
         }
 
-        private void tbSAIN_TextChanged(object sender, TextChangedEventArgs e)
+        private void tbIP_TextChanged(object sender, TextChangedEventArgs e)
         {
-            Plugin.Settings.sAIN = tbSAIN.Text;
+            Plugin.Settings.IP = tbIP.Text;
         }
     }
 }

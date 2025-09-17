@@ -22,9 +22,9 @@
                 <Label>User:</Label>
                 <TextBox Name="tbUser" TextChanged="tbUser_TextChanged"/>
                 <Label>Password:</Label>
-                <TextBox Name="tbPassword" TextChanged="tbPassword_TextChanged"/>
-                <Label>sAIN:</Label>
-                <TextBox Name="tbSAIN" TextChanged="tbSAIN_TextChanged"/>
+                <PasswordBox  Name="tbPassword" PasswordChanged="tbPassword_PasswordChanged"/>
+                <Label>IP:</Label>
+                <TextBox Name="tbIP" TextChanged="tbIP_TextChanged"/>
             </StackPanel>
         </styles:SHSection>
     </Grid>

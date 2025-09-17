@@ -117,6 +117,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="libs/tapo-devices/Src/TapoDevices/TapoDevices.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="sdkmenuicon.png" />
   </ItemGroup>
   <!-- <ItemGroup>
@@ -126,8 +129,13 @@
     </EmbeddedResource>
   </ItemGroup> -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
   <PropertyGroup>
     <PostBuildEvent>
+      XCOPY /Y /R "$(TargetDir)\System.Text.Json.dll" "%25SIMHUB_INSTALL_PATH%25"
+      XCOPY /Y /R "$(TargetDir)\System.Text.Encodings.Web.dll" "%25SIMHUB_INSTALL_PATH%25"
+      XCOPY /Y /R "$(TargetDir)\Microsoft.Bcl.AsyncInterfaces.dll" "%25SIMHUB_INSTALL_PATH%25"
+      XCOPY /Y /R "$(TargetDir)\System.IO.Pipelines.dll" "%25SIMHUB_INSTALL_PATH%25"
       XCOPY /Y /R "$(TargetDir)\$(TargetName)*" "%25SIMHUB_INSTALL_PATH%25"
     </PostBuildEvent>
   </PropertyGroup>

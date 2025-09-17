@@ -9,7 +9,7 @@
 
         public string Username = "";
         public string Password = "";        
-        public string sAIN = "";
+        public string IP = "";
 
     }
 }

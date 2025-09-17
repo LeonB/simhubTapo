@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.IO;
+using TapoDevices;
 
 namespace LeonB.Tapo
 {
@@ -20,6 +21,7 @@ namespace LeonB.Tapo
 
         public DataPluginDemoSettings Settings;
 
+        private static TapoDevices.TapoDeviceFactory tapo;
 
         /// <summary>
         /// Instance of the current plugin manager
@@ -86,93 +88,72 @@ namespace LeonB.Tapo
 
             // Load settings
             Settings = this.ReadCommonSettings<DataPluginDemoSettings>("GeneralSettings", () => new DataPluginDemoSettings());
-            pluginManager.AddAction("CallFritz", this.GetType(), CallFritz);
+            pluginManager.AddAction("TapoToggle", this.GetType(), TapoToggle);
+            pluginManager.AddAction("TapoOn", this.GetType(), TapoOn);
+            pluginManager.AddAction("TapoOff", this.GetType(), TapoOff);
 
         }
 
-        private void CallFritz(PluginManager arg1, string arg2)
+        private async void TapoToggle(PluginManager arg1, string arg2)
         {
-            /// Big thanks to https://sirmark.de/computer/fritzdect-200-schaltsteckdose-mit-c-steuern-1895.html for the used example
             string username = Settings.Username;
             string password = Settings.Password;
+            string ip = Settings.IP;
 
-            string sain = Settings.sAIN;
-            string sid = GetSessionId(username, password);
+            SimHub.Logging.Current.Info("username: " + username);
+            SimHub.Logging.Current.Info("password: " + password);
+            SimHub.Logging.Current.Info("ip: " + ip);
 
-            string sURL = string.Empty;
+            tapo =  new TapoDevices.TapoDeviceFactory(username, password);
 
-            //switchOn
-            //sURL = string.Format("http://fritz.box/webservices/homeautoswitch.lua?switchcmd=setswitchon&sid={0}&ain={1}", sid, sAIN);
+            // Connect to device with specified IP address
+            var plug = tapo.CreatePlug(ip, TimeSpan.FromSeconds(3));
+            await plug.ConnectAsync();
 
-            //switchOff
-            //sURL = string.Format("http://fritz.box/webservices/homeautoswitch.lua?switchcmd=setswitchoff&sid={0}&ain={1}", sid, sAIN);
+            // Read and display device information
+            var info = await plug.GetInfoAsync();
 
-            //toggle
-            sURL = string.Format("http://fritz.box/webservices/homeautoswitch.lua?switchcmd=setswitchtoggle&sid={0}&ain={1}", sid, sain);
-
-            //Call
-            string sResult = readUrl(sURL);
-
-            //Logout
-            sURL = string.Format("http://fritz.box/login.lua?page=/home/home.lua&logout=1&sid={0}", sid);
-
-            sResult = readUrl(sURL);
-        }
-
-        public static string GetSessionId(string benutzername, string kennwort)
-        {
-
-            XDocument doc = XDocument.Load(@"http://fritz.box/login_sid.lua");
-            string sid = fl_Get_Value_of_Node_in_XDocument_by_NodeName(doc, "SID");
-
-            if (sid == "0000000000000000")
-            {
-                string challenge = fl_Get_Value_of_Node_in_XDocument_by_NodeName(doc, "Challenge");
-                string sResponse = fl_GetResponse_by_TempUser_Passwort(challenge, kennwort);
-
-                string uri = @"http://fritz.box/login_sid.lua?username=" + benutzername + @"&response=" + sResponse;
-                doc = XDocument.Load(uri);
-
-                sid = fl_Get_Value_of_Node_in_XDocument_by_NodeName(doc, "SID");
+            if (info.DeviceOn) {
+                SimHub.Logging.Current.Info("Turning off Tapo plug");
+                await plug.TurnOffAsync();
+            } else {
+                SimHub.Logging.Current.Info("Turning on Tapo plug");
+                await plug.TurnOnAsync();
             }
-            return sid;
-
         }
 
-        public static string readUrl(string url)
+        private async void TapoOn(PluginManager arg1, string arg2)
         {
-            //read page with sid access, by webrequest
-            Uri uri = new Uri(url);
-            HttpWebRequest request = WebRequest.Create(uri) as HttpWebRequest;
-            HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-            StreamReader reader = new StreamReader(response.GetResponseStream());
-            string str = reader.ReadToEnd();
-            return str;
-        }
+            string username = Settings.Username;
+            string password = Settings.Password;
+            string ip = Settings.IP;
 
-        public static string fl_Get_Value_of_Node_in_XDocument_by_NodeName(XDocument doc, string name)
+            SimHub.Logging.Current.Info("username: " + username);
+            SimHub.Logging.Current.Info("password: " + password);
+            SimHub.Logging.Current.Info("ip: " + ip);
+
+            tapo =  new TapoDevices.TapoDeviceFactory(username, password);
+
+            // Connect to device with specified IP address
+            var plug = tapo.CreatePlug(ip, TimeSpan.FromSeconds(3));
+            await plug.ConnectAsync();
+
+            await plug.TurnOnAsync();
+        }
+        
+        private async void TapoOff(PluginManager arg1, string arg2)
         {
-            XElement info = doc.FirstNode as XElement;
-            return info.Element(name).Value;
-        }
+            string username = Settings.Username;
+            string password = Settings.Password;
+            string ip = Settings.IP;
 
-        public static string fl_GetResponse_by_TempUser_Passwort(string challenge, string kennwort)
-        {            
-            return challenge + "-" + fl_Get_MD5Hash_of_String(challenge + "-" + kennwort);
-         
-        }
+            tapo =  new TapoDevices.TapoDeviceFactory(username, password);
 
-        public static string fl_Get_MD5Hash_of_String(string input)
-        {
-            MD5 md5Hasher = MD5.Create();
-            byte[] data = md5Hasher.ComputeHash(Encoding.Unicode.GetBytes(input));
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < data.Length; i++)
-            {
-                sb.Append(data[i].ToString("x2"));
-            }
-            return sb.ToString();
+            // Connect to device with specified IP address
+            var plug = tapo.CreatePlug(ip, TimeSpan.FromSeconds(3));
+            await plug.ConnectAsync();
+            
+            await plug.TurnOffAsync();
         }
-
     }
 }
