@@ -89,6 +89,17 @@ namespace TapoDevices
             var r = await this.client.PostAsync("handshake1", new ByteArrayContent(localSeed));
             r.EnsureSuccessStatusCode(); // TODO: ? fallback to SecurePassthrough
 
+            // .net < 5.0 is not RFC 6265 compliant, work around that
+            var cookies = this.cookies.GetCookies(new Uri(this.client.BaseAddress, "handshake1"));
+            foreach (Cookie cookie in cookies)
+            {
+                // respect RFC 6265 and use the path until the last '/'
+                int lastSlash = cookie.Path.LastIndexOf('/');
+                string path = lastSlash > 0 ? cookie.Path.Substring(0, lastSlash) : cookie.Path;
+                cookie.Path = path;
+                this.cookies.Add(cookie);
+            }
+
             var responseContent = await r.Content.ReadAsByteArrayAsync();
             var remoteSeed = responseContent.Skip(0).Take(16).ToArray();
             var serverHash = responseContent.Skip(16).ToArray();
