@@ -10,7 +10,6 @@
     <RootNamespace>LeonB.Tapo</RootNamespace>
     <AssemblyName>Tapo</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <RuntimeIdentifiers>win</RuntimeIdentifiers>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -131,31 +130,20 @@
   </ItemGroup> -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 
-<PropertyGroup>
-  <!-- Path to ilrepack -->
-  <IlRepackExe>$(UserProfile)\.dotnet\tools\ilrepack.exe</IlRepackExe>
-
-  <!-- Trim trailing backslashes so they don't escape quotes -->
-  <TargetDirNoSlash>$([System.String]::Copy($(TargetDir)).TrimEnd('\'))</TargetDirNoSlash>
-  <OutDirNoSlash>$([System.String]::Copy($(OutputPath)).TrimEnd('\'))</OutDirNoSlash>
-  <SimHubPathNoSlash>$([System.String]::Copy($(SIMHUB_INSTALL_PATH)).TrimEnd('\'))</SimHubPathNoSlash>
-</PropertyGroup>
-
-<Target Name="ILRepacker" AfterTargets="Build">
-  <Exec Command="&quot;$(IlRepackExe)&quot; /parallel /internalize ^
-    /lib:&quot;$(TargetDirNoSlash)&quot; ^
-    /lib:&quot;$(SimHubPathNoSlash)&quot; ^
-    /out:&quot;$(OutDirNoSlash)\Merged.dll&quot; ^
-    &quot;$(OutputPath)\Tapo.dll&quot; ^
-    &quot;$(OutputPath)TapoDevices.dll&quot;"
-  />
-</Target>
-
   <PropertyGroup>
     <PostBuildEvent>
-      COPY /Y "$(TargetDir)\$(TargetName).dll" "%25SIMHUB_INSTALL_PATH%25Tapo.dll"
+      XCOPY /Y /R "$(TargetDir)\System.Text.Json.dll" "%25SIMHUB_INSTALL_PATH%25"
+      XCOPY /Y /R "$(TargetDir)\System.Text.Encodings.Web.dll" "%25SIMHUB_INSTALL_PATH%25"
+      XCOPY /Y /R "$(TargetDir)\Microsoft.Bcl.AsyncInterfaces.dll" "%25SIMHUB_INSTALL_PATH%25"
+      XCOPY /Y /R "$(TargetDir)\System.IO.Pipelines.dll" "%25SIMHUB_INSTALL_PATH%25"
+      XCOPY /Y /R "$(TargetDir)\$(TargetName)*" "%25SIMHUB_INSTALL_PATH%25"
     </PostBuildEvent>
   </PropertyGroup>
-
-
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
 </Project>
