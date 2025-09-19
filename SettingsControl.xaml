@@ -8,24 +8,55 @@
              xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins" 
              d:DesignHeight="300" d:DesignWidth="300">
 
-    <Grid>
-        <styles:SHSection Title="Tapo Settings">
-            <!--<StackPanel>
-                <styles:SHButtonPrimary HorizontalAlignment="Left">Primary button</styles:SHButtonPrimary>
-                <styles:SHButtonSecondary HorizontalAlignment="Left">Secondary button</styles:SHButtonSecondary>
-                <styles:SHLinkButton HorizontalAlignment="Left">Link button</styles:SHLinkButton>
-                <styles:SHLinkButtonSmall HorizontalAlignment="Left">Link button small</styles:SHLinkButtonSmall>
-                <ui:ControlsEditor FriendlyName="Increment Speed Warning" ActionName="DataPluginDemo.IncrementSpeedWarning"></ui:ControlsEditor>  
-
-            </StackPanel>-->
+    <ScrollViewer>
+        <Grid>
             <StackPanel>
-                <Label>User:</Label>
-                <TextBox Name="tbUser" TextChanged="tbUser_TextChanged"/>
-                <Label>Password:</Label>
-                <PasswordBox  Name="tbPassword" PasswordChanged="tbPassword_PasswordChanged"/>
-                <Label>IP:</Label>
-                <TextBox Name="tbIP" TextChanged="tbIP_TextChanged"/>
+                <styles:SHSubSection Title="Login Credentials">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label>User:</Label>
+                            <TextBox Name="tbUser" TextChanged="tbUser_TextChanged"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label>Password:</Label>
+                            <PasswordBox  Name="tbPassword" PasswordChanged="tbPassword_PasswordChanged"/>
+                        </StackPanel>
+                    </StackPanel>
+                </styles:SHSubSection>
+
+                <StackPanel>
+                    <styles:SHButtonPrimary HorizontalAlignment="Right">Add Device</styles:SHButtonPrimary>
+                </StackPanel>
+
+                <styles:SHSubSection Title="Devices">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Width="200">IP:</Label>
+                            <TextBox Name="tbIP" TextChanged="tbIP_TextChanged" Width="200"/>
+                        </StackPanel>
+                        
+                        <StackPanel Orientation="Horizontal">
+                            <Label Width="200">On Startup:</Label>
+                            <ComboBox Name="cbOnStartup" Width="200">
+                                <ComboBoxItem IsSelected="True"></ComboBoxItem>
+                                <ComboBoxItem>On</ComboBoxItem>
+                                <ComboBoxItem>Off</ComboBoxItem>
+                                <ComboBoxItem>Toggle</ComboBoxItem>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Label Width="200">On Shutdown:</Label>
+                            <ComboBox Name="cbOnShutdown" Width="200">
+                                <ComboBoxItem IsSelected="True"></ComboBoxItem>
+                                <ComboBoxItem>On</ComboBoxItem>
+                                <ComboBoxItem>Off</ComboBoxItem>
+                                <ComboBoxItem>Toggle</ComboBoxItem>
+                            </ComboBox>
+                        </StackPanel>
+                    </StackPanel>
+                </styles:SHSubSection>
             </StackPanel>
-        </styles:SHSection>
-    </Grid>
+        </Grid>
+    </ScrollViewer>
 </UserControl>
