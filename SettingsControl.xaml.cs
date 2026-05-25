@@ -46,6 +46,14 @@ namespace LeonB.Tapo
                 return;
             }
 
+            var name = tbName.Text.Trim();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                tbNameError.Visibility = Visibility.Visible;
+                return;
+            }
+            tbNameError.Visibility = Visibility.Collapsed;
+
             var ip = NormalizeIp(tbIP.Text);
             if (string.IsNullOrWhiteSpace(ip))
             {
@@ -59,19 +67,25 @@ namespace LeonB.Tapo
                 var existing = Plugin.Settings.Devices.FirstOrDefault(d => string.Equals(d.IP, _editingIp, StringComparison.OrdinalIgnoreCase));
                 if (existing != null)
                 {
+                    Plugin.UnregisterDeviceActions(existing.Name);
+                    existing.Name = name;
                     existing.IP = ip;
                     existing.OnStartup = GetSelectedComboBoxText(cbAddOnStartup);
                     existing.OnShutdown = GetSelectedComboBoxText(cbAddOnShutdown);
+                    Plugin.RegisterDeviceActions(existing.Name, existing.IP);
                 }
             }
             else if (!Plugin.Settings.Devices.Any(d => string.Equals(d.IP, ip, StringComparison.OrdinalIgnoreCase)))
             {
-                Plugin.Settings.Devices.Add(new TapoDeviceConfig
+                var device = new TapoDeviceConfig
                 {
+                    Name = name,
                     IP = ip,
                     OnStartup = GetSelectedComboBoxText(cbAddOnStartup),
                     OnShutdown = GetSelectedComboBoxText(cbAddOnShutdown)
-                });
+                };
+                Plugin.Settings.Devices.Add(device);
+                Plugin.RegisterDeviceActions(device.Name, device.IP);
             }
 
             SyncLegacyFields();
@@ -86,9 +100,10 @@ namespace LeonB.Tapo
             var device = (sender as Button)?.Tag as TapoDeviceConfig;
             if (device == null) return;
 
-            var result = MessageBox.Show($"Remove device {device.IP}?", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.Show($"Remove device {device.Name}?", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes) return;
 
+            Plugin.UnregisterDeviceActions(device.Name);
             NormalizeDeviceSettings();
             Plugin.Settings.Devices.RemoveAll(d => string.Equals(d.IP, device.IP, StringComparison.OrdinalIgnoreCase));
             SyncLegacyFields();
@@ -105,6 +120,7 @@ namespace LeonB.Tapo
             }
 
             _editingIp = device.IP;
+            tbName.Text = device.Name;
             tbIP.Text = device.IP;
             SelectComboBoxItem(cbAddOnStartup, device.OnStartup);
             SelectComboBoxItem(cbAddOnShutdown, device.OnShutdown);
@@ -121,6 +137,8 @@ namespace LeonB.Tapo
         private void ResetAddForm()
         {
             _editingIp = null;
+            tbName.Text = "";
+            tbNameError.Visibility = Visibility.Collapsed;
             tbIP.Text = "";
             SelectComboBoxItem(cbAddOnStartup, "");
             SelectComboBoxItem(cbAddOnShutdown, "");
@@ -182,7 +200,7 @@ namespace LeonB.Tapo
             }
 
             Plugin.Settings.Devices = Plugin.Settings.Devices
-                .Select(d => new TapoDeviceConfig { IP = NormalizeIp(d.IP), OnStartup = d.OnStartup ?? "", OnShutdown = d.OnShutdown ?? "" })
+                .Select(d => new TapoDeviceConfig { Name = d.Name ?? "", IP = NormalizeIp(d.IP), OnStartup = d.OnStartup ?? "", OnShutdown = d.OnShutdown ?? "" })
                 .Where(d => !string.IsNullOrWhiteSpace(d.IP))
                 .GroupBy(d => d.IP, StringComparer.OrdinalIgnoreCase)
                 .Select(g => g.First())

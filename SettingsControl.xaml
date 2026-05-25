@@ -27,6 +27,14 @@
                 <styles:SHSubSection Title="Devices">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
+                            <Label Width="200">Name:</Label>
+                            <StackPanel>
+                                <TextBox Name="tbName" Width="200"/>
+                                <TextBlock Name="tbNameError" Text="Name is required." Foreground="Red" Visibility="Collapsed"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
                             <Label Width="200">IP:</Label>
                             <TextBox Name="tbIP" Width="200"/>
                         </StackPanel>
