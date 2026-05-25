@@ -10,6 +10,8 @@
         public string Username = "";
         public string Password = "";        
         public string IP = "";
+        public string OnStartup = "";
+        public string OnShutdown = "";
 
     }
 }

@@ -37,7 +37,7 @@
                         
                         <StackPanel Orientation="Horizontal">
                             <Label Width="200">On Startup:</Label>
-                            <ComboBox Name="cbOnStartup" Width="200">
+                            <ComboBox Name="cbOnStartup" Width="200" SelectionChanged="cbOnStartup_SelectionChanged">
                                 <ComboBoxItem IsSelected="True"></ComboBoxItem>
                                 <ComboBoxItem>On</ComboBoxItem>
                                 <ComboBoxItem>Off</ComboBoxItem>
@@ -47,7 +47,7 @@
 
                         <StackPanel Orientation="Horizontal">
                             <Label Width="200">On Shutdown:</Label>
-                            <ComboBox Name="cbOnShutdown" Width="200">
+                            <ComboBox Name="cbOnShutdown" Width="200" SelectionChanged="cbOnShutdown_SelectionChanged">
                                 <ComboBoxItem IsSelected="True"></ComboBoxItem>
                                 <ComboBoxItem>On</ComboBoxItem>
                                 <ComboBoxItem>Off</ComboBoxItem>
