@@ -30,7 +30,7 @@
                             <Label Width="200">Name:</Label>
                             <StackPanel>
                                 <TextBox Name="tbName" Width="200"/>
-                                <TextBlock Name="tbNameError" Text="Name is required." Foreground="Red" Visibility="Collapsed"/>
+                                <TextBlock Name="tbNameError" Foreground="Red" Visibility="Collapsed"/>
                             </StackPanel>
                         </StackPanel>
 

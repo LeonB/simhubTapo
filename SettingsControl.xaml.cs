@@ -13,7 +13,7 @@ namespace LeonB.Tapo
     {
         public Tapoer Plugin { get; }
 
-        private string _editingIp = null;
+        private string _editingName = null;
 
         public SettingsControl()
         {
@@ -49,9 +49,21 @@ namespace LeonB.Tapo
             var name = tbName.Text.Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
+                tbNameError.Text = "Name is required.";
                 tbNameError.Visibility = Visibility.Visible;
                 return;
             }
+
+            var nameInUse = Plugin.Settings.Devices.Any(d =>
+                string.Equals(d.Name, name, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(d.Name, _editingName, StringComparison.OrdinalIgnoreCase));
+            if (nameInUse)
+            {
+                tbNameError.Text = "Name is already in use.";
+                tbNameError.Visibility = Visibility.Visible;
+                return;
+            }
+
             tbNameError.Visibility = Visibility.Collapsed;
 
             var ip = NormalizeIp(tbIP.Text);
@@ -62,9 +74,9 @@ namespace LeonB.Tapo
 
             NormalizeDeviceSettings();
 
-            if (_editingIp != null)
+            if (_editingName != null)
             {
-                var existing = Plugin.Settings.Devices.FirstOrDefault(d => string.Equals(d.IP, _editingIp, StringComparison.OrdinalIgnoreCase));
+                var existing = Plugin.Settings.Devices.FirstOrDefault(d => string.Equals(d.Name, _editingName, StringComparison.OrdinalIgnoreCase));
                 if (existing != null)
                 {
                     Plugin.UnregisterDeviceActions(existing.Name);
@@ -119,7 +131,7 @@ namespace LeonB.Tapo
                 return;
             }
 
-            _editingIp = device.IP;
+            _editingName = device.Name;
             tbName.Text = device.Name;
             tbIP.Text = device.IP;
             SelectComboBoxItem(cbAddOnStartup, device.OnStartup);
@@ -136,7 +148,7 @@ namespace LeonB.Tapo
 
         private void ResetAddForm()
         {
-            _editingIp = null;
+            _editingName = null;
             tbName.Text = "";
             tbNameError.Visibility = Visibility.Collapsed;
             tbIP.Text = "";
