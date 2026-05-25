@@ -2,12 +2,12 @@
 
 SimHub plugin for controlling TP-Link Tapo smart plugs from SimHub actions.
 
-The plugin connects to a Tapo device on your local network using your Tapo account credentials and a configured device IP address. It currently exposes actions for switching the plug on, switching it off, and toggling the current state.
+The plugin connects to Tapo devices on your local network using your Tapo account credentials and configured device IP addresses. It currently exposes actions for switching plugs on, switching them off, and toggling the current state.
 
 ## Features
 
 - SimHub plugin named `Tapo`
-- Settings panel for Tapo username, password, and smart plug IP address
+- Settings panel for Tapo username, password, and smart plug IP addresses
 - SimHub actions:
   - `TapoOn`
   - `TapoOff`
@@ -43,9 +43,9 @@ In the SimHub plugin settings, enter:
 
 - `User`: your Tapo account email or username
 - `Password`: your Tapo account password
-- `IP`: the local IP address of the Tapo smart plug
+- `IP`: the local IP address of a Tapo smart plug
 
-For best results, reserve the plug IP address in your router so it does not change.
+Use `Add Device` to save the IP address. Select a saved device and use `Remove Selected` to remove it. For best results, reserve plug IP addresses in your router so they do not change.
 
 ## Building
 
@@ -83,9 +83,9 @@ Restart SimHub after copying the files.
 
 After the plugin is installed and configured, create a SimHub control mapping, event, or button action and select one of the plugin actions:
 
-- `TapoOn`: turns the configured plug on
-- `TapoOff`: turns the configured plug off
-- `TapoToggle`: reads the current plug state, then switches it to the opposite state
+- `TapoOn`: turns the configured plugs on
+- `TapoOff`: turns the configured plugs off
+- `TapoToggle`: reads each configured plug state, then switches it to the opposite state
 
 ## Troubleshooting
 
@@ -95,8 +95,7 @@ If the legacy protocol reports a response like `<html><body><center>200 OK</cent
 
 ## Current Limitations
 
-- Only one plug IP address is stored in the settings.
-- The `Add Device` control is present in the UI but is not wired to behavior yet.
+- Device discovery is not implemented; plug IP addresses must be added manually.
 - Actions are implemented as fire-and-forget async handlers, so connection errors are not surfaced in the UI.
 
 ## Vendored Library
