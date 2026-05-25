@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace TapoDevices
@@ -87,7 +88,12 @@ namespace TapoDevices
             var localSeed = GenerateLocalSeed();
 
             var r = await this.client.PostAsync("handshake1", new ByteArrayContent(localSeed));
-            r.EnsureSuccessStatusCode(); // TODO: ? fallback to SecurePassthrough
+            if (!r.IsSuccessStatusCode)
+            {
+                var responseData = await r.Content.ReadAsByteArrayAsync();
+                throw new HttpRequestException(
+                    $"Tapo KLAP handshake failed with HTTP {(int)r.StatusCode} ({r.ReasonPhrase}). Response: {CreateResponsePreview(responseData)}");
+            }
 
             // .net < 5.0 is not RFC 6265 compliant, work around that
             var cookies = this.cookies.GetCookies(new Uri(this.client.BaseAddress, "handshake1"));
@@ -306,9 +312,42 @@ namespace TapoDevices
             var url = String.IsNullOrEmpty(token) ? String.Empty : $"?token={token}";
             var response = await this.client.PostAsync(url, content);
             var responseData = await response.Content.ReadAsByteArrayAsync();
-            var deserialized = Utils.Deserialize<TapoResponse<TResult>>(responseData);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(
+                    $"Tapo request failed with HTTP {(int)response.StatusCode} ({response.ReasonPhrase}). Response: {CreateResponsePreview(responseData)}");
+            }
+
+            try
+            {
+                return Utils.Deserialize<TapoResponse<TResult>>(responseData);
+            }
+            catch (JsonException ex)
+            {
+                throw new InvalidOperationException(
+                    $"Tapo device returned a non-JSON response. Response: {CreateResponsePreview(responseData)}",
+                    ex);
+            }
             // TODO: ! check var deserialized = await response.Content.ReadFromJsonAsync<TapoResponse<TResult>>(Utils.SerializerOptions);
-            return deserialized;
+        }
+
+        private static string CreateResponsePreview(byte[] responseData)
+        {
+            if (responseData == null || responseData.Length == 0)
+            {
+                return "<empty>";
+            }
+
+            var responseText = Encoding.UTF8.GetString(responseData);
+            responseText = responseText.Replace("\r", " ").Replace("\n", " ").Trim();
+
+            if (responseText.Length > 300)
+            {
+                responseText = responseText.Substring(0, 300) + "...";
+            }
+
+            return responseText;
         }
     }
 }
