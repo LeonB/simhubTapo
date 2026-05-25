@@ -96,9 +96,8 @@ If the legacy protocol reports a response like `<html><body><center>200 OK</cent
 ## Current Limitations
 
 - Only one plug IP address is stored in the settings.
-- The `Add Device`, `On Startup`, and `On Shutdown` controls are present in the UI but are not wired to behavior yet.
+- The `Add Device` control is present in the UI but is not wired to behavior yet.
 - Actions are implemented as fire-and-forget async handlers, so connection errors are not surfaced in the UI.
-- The plugin currently logs the configured username, password, and IP address when running some actions. Avoid sharing logs that contain credentials.
 
 ## Vendored Library
 
