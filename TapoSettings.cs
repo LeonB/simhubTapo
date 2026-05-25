@@ -4,6 +4,7 @@ namespace LeonB.Tapo
 {
     public class TapoDeviceConfig
     {
+        public string Name { get; set; } = "";
         public string IP { get; set; } = "";
         public string OnStartup { get; set; } = "";
         public string OnShutdown { get; set; } = "";
@@ -12,7 +13,7 @@ namespace LeonB.Tapo
         {
             var startup = string.IsNullOrEmpty(OnStartup) ? "-" : OnStartup;
             var shutdown = string.IsNullOrEmpty(OnShutdown) ? "-" : OnShutdown;
-            return IP + "  (Startup: " + startup + ", Shutdown: " + shutdown + ")";
+            return Name + " (" + IP + ")  Startup: " + startup + ", Shutdown: " + shutdown;
         }
     }
 

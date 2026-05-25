@@ -1,15 +1,9 @@
-using GameReaderCommon;
+﻿using GameReaderCommon;
 using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Security.Cryptography;
-using System.IO;
 using TapoDevices;
 
 namespace LeonB.Tapo
@@ -42,7 +36,7 @@ namespace LeonB.Tapo
         {
             return;
             //// Define the value of our property (declared in init)
-            //pluginManager.SetPropertyValue("CurrentDateTime", this.GetType(), DateTime.Now);
+            //pluginManager.SetPropertyValue("CurrentDateTime", GetType(), DateTime.Now);
 
             //if (data.GameRunning)
             //{
@@ -51,7 +45,7 @@ namespace LeonB.Tapo
             //        if (data.OldData.SpeedKmh < Settings.SpeedWarningLevel && data.OldData.SpeedKmh >= Settings.SpeedWarningLevel)
             //        {
             //            // Trigger an event
-            //            pluginManager.TriggerEvent("SpeedWarning", this.GetType());
+            //            pluginManager.TriggerEvent("SpeedWarning", GetType());
             //        }
             //    }
             //}
@@ -92,32 +86,40 @@ namespace LeonB.Tapo
             // Load settings
             Settings = this.ReadCommonSettings<DataPluginDemoSettings>("GeneralSettings", () => new DataPluginDemoSettings());
             NormalizeDeviceSettings();
-            pluginManager.AddAction("TapoToggle", this.GetType(), TapoToggle);
-            pluginManager.AddAction("TapoOn", this.GetType(), TapoOn);
-            pluginManager.AddAction("TapoOff", this.GetType(), TapoOff);
 
             foreach (var device in Settings.Devices)
             {
-                ExecuteDeviceLifecycleAction("startup", device.OnStartup, device.IP);
+                RegisterDeviceActions(device.Name, device.IP);
+                _ = ExecuteDeviceActionAsync("startup", device.OnStartup, device.IP);
             }
         }
 
-        private async void TapoToggle(PluginManager arg1, string arg2)
+        internal void RegisterDeviceActions(string name, string ip)
         {
-            await ExecutePlugActionWithLoggingAsync("manual", "Toggle").ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                SimHub.Logging.Current.Warn("Tapo device " + ip + " has no name; skipping action registration.");
+                return;
+            }
+
+            PluginManager.AddAction(name + " On", GetType(),
+                async (mgr, arg) => await ExecuteDeviceActionAsync("manual", "On", ip).ConfigureAwait(false));
+            PluginManager.AddAction(name + " Off", GetType(),
+                async (mgr, arg) => await ExecuteDeviceActionAsync("manual", "Off", ip).ConfigureAwait(false));
+            PluginManager.AddAction(name + "Toggle", GetType(),
+                async (mgr, arg) => await ExecuteDeviceActionAsync("manual", "Toggle", ip).ConfigureAwait(false));
         }
 
-        private async void TapoOn(PluginManager arg1, string arg2)
+        internal void UnregisterDeviceActions(string name)
         {
-            await ExecutePlugActionWithLoggingAsync("manual", "On").ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(name)) return;
+
+            PluginManager.ClearActions(GetType(), name + " On");
+            PluginManager.ClearActions(GetType(), name + " Off");
+            PluginManager.ClearActions(GetType(), name + "Toggle");
         }
 
-        private async void TapoOff(PluginManager arg1, string arg2)
-        {
-            await ExecutePlugActionWithLoggingAsync("manual", "Off").ConfigureAwait(false);
-        }
-
-        private async void ExecuteDeviceLifecycleAction(string lifecycleName, string action, string deviceIp)
+        private async Task ExecuteDeviceActionAsync(string context, string action, string deviceIp)
         {
             if (string.IsNullOrWhiteSpace(action))
             {
@@ -126,12 +128,12 @@ namespace LeonB.Tapo
 
             try
             {
-                SimHub.Logging.Current.Info("Running Tapo " + lifecycleName + " action: " + action + " for " + deviceIp);
+                SimHub.Logging.Current.Info("Tapo " + context + ": " + action + " for " + deviceIp);
                 await EnsureFactoryAndExecuteForDeviceAsync(action, deviceIp).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                SimHub.Logging.Current.Error("Tapo " + lifecycleName + " action failed for " + deviceIp, ex);
+                SimHub.Logging.Current.Error("Tapo " + context + " failed for " + deviceIp, ex);
             }
         }
 
@@ -186,50 +188,6 @@ namespace LeonB.Tapo
 
             tapo = new TapoDevices.TapoDeviceFactory(Settings.Username, Settings.Password);
             await ExecutePlugActionForDeviceAsync(action, deviceIp).ConfigureAwait(false);
-        }
-
-        private async Task ExecutePlugActionWithLoggingAsync(string actionSource, string action)
-        {
-            try
-            {
-                SimHub.Logging.Current.Info("Running Tapo " + actionSource + " action: " + action);
-                await ExecutePlugActionAsync(action).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                SimHub.Logging.Current.Error("Tapo " + actionSource + " action failed", ex);
-            }
-        }
-
-        private async Task ExecutePlugActionAsync(string action)
-        {
-            if (string.IsNullOrWhiteSpace(Settings.Username) ||
-                string.IsNullOrWhiteSpace(Settings.Password))
-            {
-                SimHub.Logging.Current.Warn("Tapo action skipped because username or password is missing.");
-                return;
-            }
-
-            var deviceIps = GetConfiguredDeviceIps().ToList();
-            if (deviceIps.Count == 0)
-            {
-                SimHub.Logging.Current.Warn("Tapo action skipped because no device IPs are configured.");
-                return;
-            }
-
-            tapo = new TapoDevices.TapoDeviceFactory(Settings.Username, Settings.Password);
-
-            foreach (var deviceIp in deviceIps)
-            {
-                try
-                {
-                    await ExecutePlugActionForDeviceAsync(action, deviceIp).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    SimHub.Logging.Current.Error("Tapo action failed for device " + deviceIp, ex);
-                }
-            }
         }
 
         private async Task ExecutePlugActionForDeviceAsync(string action, string deviceIp)
@@ -316,8 +274,8 @@ namespace LeonB.Tapo
         {
             while (ex != null)
             {
-                if (ex.Message.IndexOf("403", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    ex.Message.IndexOf("Forbidden", StringComparison.OrdinalIgnoreCase) >= 0)
+                if (ex.Message.Contains("403") ||
+                    ex.Message.Contains("Forbidden"))
                 {
                     return true;
                 }
@@ -368,6 +326,7 @@ namespace LeonB.Tapo
             Settings.Devices = Settings.Devices
                 .Select(d => new TapoDeviceConfig
                 {
+                    Name = d.Name ?? "",
                     IP = string.IsNullOrWhiteSpace(d.IP) ? "" : d.IP.Trim(),
                     OnStartup = d.OnStartup ?? "",
                     OnShutdown = d.OnShutdown ?? ""
@@ -382,13 +341,5 @@ namespace LeonB.Tapo
             Settings.IP = Settings.DeviceIPs.FirstOrDefault() ?? "";
         }
 
-        private IEnumerable<string> GetConfiguredDeviceIps()
-        {
-            if (Settings.Devices == null) return Enumerable.Empty<string>();
-            return Settings.Devices
-                .Select(d => string.IsNullOrWhiteSpace(d.IP) ? "" : d.IP.Trim())
-                .Where(ip => !string.IsNullOrWhiteSpace(ip))
-                .Distinct(StringComparer.OrdinalIgnoreCase);
-        }
     }
 }
