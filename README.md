@@ -69,7 +69,13 @@ If you do not use the post-build step, copy the built files from `bin\Debug` or 
 - `System.Text.Json.dll`
 - `System.Text.Encodings.Web.dll`
 - `Microsoft.Bcl.AsyncInterfaces.dll`
+- `System.Buffers.dll`
+- `System.Formats.Asn1.dll`
 - `System.IO.Pipelines.dll`
+- `System.Memory.dll`
+- `System.Numerics.Vectors.dll`
+- `System.Runtime.CompilerServices.Unsafe.dll`
+- `System.ValueTuple.dll`
 
 Restart SimHub after copying the files.
 
@@ -80,6 +86,12 @@ After the plugin is installed and configured, create a SimHub control mapping, e
 - `TapoOn`: turns the configured plug on
 - `TapoOff`: turns the configured plug off
 - `TapoToggle`: reads the current plug state, then switches it to the opposite state
+
+## Troubleshooting
+
+If the log says `Tapo KLAP handshake was rejected with HTTP 403`, the plug is refusing local third-party API access. In the Tapo app, enable third-party compatibility or local access for the device, then verify the configured Tapo account email, password, and plug IP address. For newer firmware such as Tapo P115 `1.4.0`, also make sure the plug has internet access; reports from Home Assistant users indicate that this firmware can reject local control with `403` when the device is offline.
+
+If the legacy protocol reports a response like `<html><body><center>200 OK</center></body></html>`, the device is answering with a generic web page instead of the old JSON API. Modern Tapo firmware usually requires KLAP and will not work through the legacy fallback.
 
 ## Current Limitations
 

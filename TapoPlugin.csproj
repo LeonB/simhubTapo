@@ -81,6 +81,10 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Formats.Asn1">
+      <HintPath>$(USERPROFILE)\.nuget\packages\system.formats.asn1\9.0.9\lib\netstandard2.0\System.Formats.Asn1.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
@@ -135,7 +139,13 @@
       XCOPY /Y /R "$(TargetDir)\System.Text.Json.dll" "%25SIMHUB_INSTALL_PATH%25"
       XCOPY /Y /R "$(TargetDir)\System.Text.Encodings.Web.dll" "%25SIMHUB_INSTALL_PATH%25"
       XCOPY /Y /R "$(TargetDir)\Microsoft.Bcl.AsyncInterfaces.dll" "%25SIMHUB_INSTALL_PATH%25"
+      XCOPY /Y /R "$(TargetDir)\System.Buffers.dll" "%25SIMHUB_INSTALL_PATH%25"
+      XCOPY /Y /R "$(TargetDir)\System.Formats.Asn1.dll" "%25SIMHUB_INSTALL_PATH%25"
       XCOPY /Y /R "$(TargetDir)\System.IO.Pipelines.dll" "%25SIMHUB_INSTALL_PATH%25"
+      XCOPY /Y /R "$(TargetDir)\System.Memory.dll" "%25SIMHUB_INSTALL_PATH%25"
+      XCOPY /Y /R "$(TargetDir)\System.Numerics.Vectors.dll" "%25SIMHUB_INSTALL_PATH%25"
+      XCOPY /Y /R "$(TargetDir)\System.Runtime.CompilerServices.Unsafe.dll" "%25SIMHUB_INSTALL_PATH%25"
+      XCOPY /Y /R "$(TargetDir)\System.ValueTuple.dll" "%25SIMHUB_INSTALL_PATH%25"
       XCOPY /Y /R "$(TargetDir)\$(TargetName)*" "%25SIMHUB_INSTALL_PATH%25"
     </PostBuildEvent>
   </PropertyGroup>
