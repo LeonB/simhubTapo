@@ -34,21 +34,6 @@ namespace LeonB.Tapo
         /// <param name="data"></param>
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
         {
-            return;
-            //// Define the value of our property (declared in init)
-            //pluginManager.SetPropertyValue("CurrentDateTime", GetType(), DateTime.Now);
-
-            //if (data.GameRunning)
-            //{
-            //    if (data.OldData != null && data.NewData != null)
-            //    {
-            //        if (data.OldData.SpeedKmh < Settings.SpeedWarningLevel && data.OldData.SpeedKmh >= Settings.SpeedWarningLevel)
-            //        {
-            //            // Trigger an event
-            //            pluginManager.TriggerEvent("SpeedWarning", GetType());
-            //        }
-            //    }
-            //}
         }
 
         /// <summary>
