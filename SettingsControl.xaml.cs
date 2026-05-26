@@ -69,8 +69,22 @@ namespace LeonB.Tapo
             var ip = NormalizeIp(tbIP.Text);
             if (string.IsNullOrWhiteSpace(ip))
             {
+                tbIPError.Text = "IP is required.";
+                tbIPError.Visibility = Visibility.Visible;
                 return;
             }
+
+            var ipInUse = Plugin.Settings.Devices.Any(d =>
+                string.Equals(d.IP, ip, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(d.Name, _editingName, StringComparison.OrdinalIgnoreCase));
+            if (ipInUse)
+            {
+                tbIPError.Text = "IP is already in use.";
+                tbIPError.Visibility = Visibility.Visible;
+                return;
+            }
+
+            tbIPError.Visibility = Visibility.Collapsed;
 
             NormalizeDeviceSettings();
 
@@ -151,6 +165,7 @@ namespace LeonB.Tapo
             tbName.Text = "";
             tbNameError.Visibility = Visibility.Collapsed;
             tbIP.Text = "";
+            tbIPError.Visibility = Visibility.Collapsed;
             SelectComboBoxItem(cbAddOnStartup, "");
             SelectComboBoxItem(cbAddOnShutdown, "");
             btnAddDevice.Content = "Add Device";

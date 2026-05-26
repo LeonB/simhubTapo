@@ -36,7 +36,10 @@
 
                         <StackPanel Orientation="Horizontal">
                             <Label Width="200">IP:</Label>
-                            <TextBox Name="tbIP" Width="200"/>
+                            <StackPanel>
+                                <TextBox Name="tbIP" Width="200"/>
+                                <TextBlock Name="tbIPError" Foreground="Red" Visibility="Collapsed"/>
+                            </StackPanel>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal">
