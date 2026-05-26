@@ -134,21 +134,20 @@
   </ItemGroup> -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 
-  <PropertyGroup>
-    <PostBuildEvent>
-      XCOPY /Y /R "$(TargetDir)\System.Text.Json.dll" "%25SIMHUB_INSTALL_PATH%25"
-      XCOPY /Y /R "$(TargetDir)\System.Text.Encodings.Web.dll" "%25SIMHUB_INSTALL_PATH%25"
-      XCOPY /Y /R "$(TargetDir)\Microsoft.Bcl.AsyncInterfaces.dll" "%25SIMHUB_INSTALL_PATH%25"
-      XCOPY /Y /R "$(TargetDir)\System.Buffers.dll" "%25SIMHUB_INSTALL_PATH%25"
-      XCOPY /Y /R "$(TargetDir)\System.Formats.Asn1.dll" "%25SIMHUB_INSTALL_PATH%25"
-      XCOPY /Y /R "$(TargetDir)\System.IO.Pipelines.dll" "%25SIMHUB_INSTALL_PATH%25"
-      XCOPY /Y /R "$(TargetDir)\System.Memory.dll" "%25SIMHUB_INSTALL_PATH%25"
-      XCOPY /Y /R "$(TargetDir)\System.Numerics.Vectors.dll" "%25SIMHUB_INSTALL_PATH%25"
-      XCOPY /Y /R "$(TargetDir)\System.Runtime.CompilerServices.Unsafe.dll" "%25SIMHUB_INSTALL_PATH%25"
-      XCOPY /Y /R "$(TargetDir)\System.ValueTuple.dll" "%25SIMHUB_INSTALL_PATH%25"
-      XCOPY /Y /R "$(TargetDir)\$(TargetName)*" "%25SIMHUB_INSTALL_PATH%25"
-    </PostBuildEvent>
-  </PropertyGroup>
+  <Target Name="CopyToSimHub" AfterTargets="Build" Condition="'$(SIMHUB_INSTALL_PATH)' != '' AND '$(Configuration)' == 'Release'">
+    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)System.Text.Json.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
+    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)System.Text.Encodings.Web.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
+    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)Microsoft.Bcl.AsyncInterfaces.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
+    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)System.Buffers.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
+    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)System.Formats.Asn1.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
+    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)System.IO.Pipelines.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
+    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)System.Memory.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
+    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)System.Numerics.Vectors.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
+    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)System.Runtime.CompilerServices.Unsafe.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
+    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)System.ValueTuple.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
+    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)$(TargetName).dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
+    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" IgnoreExitCode="true" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

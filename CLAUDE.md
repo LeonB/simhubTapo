@@ -4,20 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Build
 
-Requires the `SIMHUB_INSTALL_PATH` environment variable pointing to the SimHub install directory. The post-build step copies the output DLLs there automatically.
+**Always verify the project builds successfully after every code change before committing.**
+
+Debug builds compile only — the copy to SimHub is skipped:
+
+```powershell
+& "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" "TapoPlugin.sln" /p:Configuration=Debug /v:minimal
+```
+
+Release builds compile and copy the DLLs into `SIMHUB_INSTALL_PATH`. Requires the env var and SimHub to be closed (otherwise the running process holds file locks):
 
 ```powershell
 $env:SIMHUB_INSTALL_PATH = "C:\Program Files (x86)\SimHub\"
-msbuild .\TapoPlugin.sln /p:Configuration=Release
+& "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" "TapoPlugin.sln" /p:Configuration=Release /v:minimal
 ```
 
-After a successful build, restart SimHub to pick up the new plugin DLL.
-
-**Always verify the project builds successfully after every code change before committing.** Use `/p:PostBuildEvent=""` to skip the XCOPY step when SimHub is not installed in the build environment:
-
-```powershell
-$env:SIMHUB_INSTALL_PATH = "C:\Program Files (x86)\SimHub\"; & "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" "TapoPlugin.sln" /p:Configuration=Debug "/p:PostBuildEvent=" /v:minimal
-```
+After a Release build, restart SimHub to pick up the new plugin DLL.
 
 ## Language version
 
