@@ -56,7 +56,7 @@ namespace TapoDevices
             return devices;
         }
 
-        private static DiscoveredDevice TryParseResponse(byte[] buffer, string senderIp)
+        internal static DiscoveredDevice TryParseResponse(byte[] buffer, string senderIp)
         {
             if (buffer.Length <= HeaderLength)
                 return null;
