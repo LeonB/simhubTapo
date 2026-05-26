@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,7 +24,7 @@ namespace LeonB.Tapo
             Plugin = plugin;
             tbUser.Text = Plugin.Settings.Username;
             tbPassword.Password = Plugin.Settings.Password;
-            NormalizeDeviceSettings();
+            Plugin.NormalizeDeviceSettings();
             RefreshDeviceList();
         }
 
@@ -86,7 +85,7 @@ namespace LeonB.Tapo
 
             tbIPError.Visibility = Visibility.Collapsed;
 
-            NormalizeDeviceSettings();
+            Plugin.NormalizeDeviceSettings();
 
             if (_editingName != null)
             {
@@ -114,7 +113,7 @@ namespace LeonB.Tapo
                 Plugin.RegisterDeviceActions(device.Name, device.IP);
             }
 
-            SyncLegacyFields();
+            Plugin.SyncLegacyFields();
             ResetAddForm();
             RefreshDeviceList();
         }
@@ -131,7 +130,7 @@ namespace LeonB.Tapo
 
             Plugin.UnregisterDeviceActions(device.Name);
             Plugin.Settings.Devices.RemoveAll(d => string.Equals(d.IP, device.IP, StringComparison.OrdinalIgnoreCase));
-            SyncLegacyFields();
+            Plugin.SyncLegacyFields();
             ResetAddForm();
             RefreshDeviceList();
         }
@@ -194,57 +193,10 @@ namespace LeonB.Tapo
             return item == null || item.Content == null ? "" : item.Content.ToString();
         }
 
-        private void NormalizeDeviceSettings()
-        {
-            if (Plugin.Settings.Devices == null)
-            {
-                Plugin.Settings.Devices = new List<TapoDeviceConfig>();
-            }
-
-            // Migration from legacy DeviceIPs if Devices is empty (safety net — plugin init does this too)
-            if (!Plugin.Settings.Devices.Any())
-            {
-                var legacyIps = new List<string>();
-                if (Plugin.Settings.DeviceIPs != null)
-                {
-                    legacyIps.AddRange(Plugin.Settings.DeviceIPs.Select(NormalizeIp).Where(ip => !string.IsNullOrWhiteSpace(ip)));
-                }
-                var legacyIp = NormalizeIp(Plugin.Settings.IP);
-                if (!string.IsNullOrWhiteSpace(legacyIp) && !legacyIps.Any(ip => string.Equals(ip, legacyIp, StringComparison.OrdinalIgnoreCase)))
-                {
-                    legacyIps.Add(legacyIp);
-                }
-                foreach (var ip in legacyIps.Distinct(StringComparer.OrdinalIgnoreCase))
-                {
-                    Plugin.Settings.Devices.Add(new TapoDeviceConfig
-                    {
-                        IP = ip,
-                        OnStartup = Plugin.Settings.OnStartup ?? "",
-                        OnShutdown = Plugin.Settings.OnShutdown ?? ""
-                    });
-                }
-            }
-
-            Plugin.Settings.Devices = Plugin.Settings.Devices
-                .Select(d => new TapoDeviceConfig { Name = d.Name ?? "", IP = NormalizeIp(d.IP), OnStartup = d.OnStartup ?? "", OnShutdown = d.OnShutdown ?? "" })
-                .Where(d => !string.IsNullOrWhiteSpace(d.IP))
-                .GroupBy(d => d.IP, StringComparer.OrdinalIgnoreCase)
-                .Select(g => g.First())
-                .ToList();
-
-            SyncLegacyFields();
-        }
-
         private void RefreshDeviceList()
         {
             lbDevices.ItemsSource = null;
             lbDevices.ItemsSource = Plugin.Settings.Devices;
-        }
-
-        private void SyncLegacyFields()
-        {
-            Plugin.Settings.DeviceIPs = Plugin.Settings.Devices.Select(d => d.IP).ToList();
-            Plugin.Settings.IP = Plugin.Settings.DeviceIPs.FirstOrDefault() ?? "";
         }
 
         private static string NormalizeIp(string ip)

@@ -271,7 +271,7 @@ namespace LeonB.Tapo
             return false;
         }
 
-        private void NormalizeDeviceSettings()
+        internal void NormalizeDeviceSettings()
         {
             if (Settings.Devices == null)
             {
@@ -321,7 +321,11 @@ namespace LeonB.Tapo
                 .Select(g => g.First())
                 .ToList();
 
-            // Keep legacy fields in sync
+            SyncLegacyFields();
+        }
+
+        internal void SyncLegacyFields()
+        {
             Settings.DeviceIPs = Settings.Devices.Select(d => d.IP).ToList();
             Settings.IP = Settings.DeviceIPs.FirstOrDefault() ?? "";
         }
