@@ -21,6 +21,21 @@ $env:SIMHUB_INSTALL_PATH = "C:\Program Files (x86)\SimHub\"
 
 After a Release build, restart SimHub to pick up the new plugin DLL.
 
+## Tests
+
+Unit tests live in `libs/tapo-devices/Src/TapoDevices.Tests`. Run all tests:
+
+```powershell
+cd libs\tapo-devices\Src\TapoDevices.Tests
+dotnet test
+```
+
+To run just the integration test (discovers real devices on the local network) and see output:
+
+```powershell
+dotnet test --filter "Category=Integration" --logger "console;verbosity=detailed"
+```
+
 ## Language version
 
 The project targets **.NET Framework 4.8** and **C# 7.3**. Do not use C# 8+ syntax (e.g. `is not`, `??=`, switch expressions, default interface members) — the WPF temporary project the build system generates enforces this strictly and will fail with a clear `error CS8370` if violated.

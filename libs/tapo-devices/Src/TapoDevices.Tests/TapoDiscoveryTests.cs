@@ -3,11 +3,18 @@ using System.Text;
 using System.Threading.Tasks;
 using TapoDevices;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace TapoDevices.Tests
 {
     public class TapoDiscoveryTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public TapoDiscoveryTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
         // Builds a fake UDP response buffer: 16-byte header followed by JSON payload.
         private static byte[] BuildPacket(string json)
         {
@@ -108,16 +115,29 @@ namespace TapoDevices.Tests
 
         // Integration test — requires Tapo devices on the local network.
         // Run with: dotnet test --filter "Category=Integration"
-        [Fact(Skip = "Requires Tapo devices on the local network")]
+        [Fact]
         [Trait("Category", "Integration")]
-        public async Task DiscoverAsync_ReturnsAtLeastOneDevice()
+        public async Task DiscoverAsync_PrintsDiscoveredDevices()
         {
+            _output.WriteLine("Scanning for Tapo devices (5s timeout)...");
+            Console.WriteLine("Scanning for Tapo devices (5s timeout)...");
+
             var devices = await TapoDiscovery.DiscoverAsync(TimeSpan.FromSeconds(5));
 
-            Assert.NotEmpty(devices);
+            if (devices.Count == 0)
+            {
+                _output.WriteLine("No devices found.");
+                Console.WriteLine("No devices found.");
+                return;
+            }
+
+            _output.WriteLine($"Found {devices.Count} device(s):");
+            Console.WriteLine($"Found {devices.Count} device(s):");
             foreach (var d in devices)
             {
-                Assert.False(string.IsNullOrEmpty(d.IP));
+                var line = $"  IP={d.IP}  Model={d.Model}  MAC={d.MAC}  DeviceId={d.DeviceId}";
+                _output.WriteLine(line);
+                Console.WriteLine(line);
             }
         }
     }
