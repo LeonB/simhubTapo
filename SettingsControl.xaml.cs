@@ -116,7 +116,6 @@ namespace LeonB.Tapo
             if (result != MessageBoxResult.Yes) return;
 
             Plugin.UnregisterDeviceActions(device.Name);
-            NormalizeDeviceSettings();
             Plugin.Settings.Devices.RemoveAll(d => string.Equals(d.IP, device.IP, StringComparison.OrdinalIgnoreCase));
             SyncLegacyFields();
             ResetAddForm();
