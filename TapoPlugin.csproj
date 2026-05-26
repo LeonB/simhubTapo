@@ -145,6 +145,7 @@
     <Exec Command="XCOPY /Y /R &quot;$(TargetDir)System.Numerics.Vectors.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
     <Exec Command="XCOPY /Y /R &quot;$(TargetDir)System.Runtime.CompilerServices.Unsafe.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
     <Exec Command="XCOPY /Y /R &quot;$(TargetDir)System.ValueTuple.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
+    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)TapoDevices.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
     <Exec Command="XCOPY /Y /R &quot;$(TargetDir)$(TargetName).dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
     <Exec Command="XCOPY /Y /R &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" IgnoreExitCode="true" />
   </Target>

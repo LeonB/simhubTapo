@@ -42,6 +42,28 @@
                             </StackPanel>
                         </StackPanel>
 
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Label Width="200"></Label>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Name="btnDiscover" Content="Scan Network" Click="Discover_Click"/>
+                                    <TextBlock Name="tbDiscoverStatus" Margin="8,0,0,0" VerticalAlignment="Center" FontStyle="Italic"/>
+                                </StackPanel>
+                                <ListBox Name="lbDiscovered" Width="300" MaxHeight="120" Visibility="Collapsed" Margin="0,4,0,0"
+                                         SelectionChanged="lbDiscovered_SelectionChanged">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock>
+                                                <Run Text="{Binding Name, Mode=OneWay}"/>
+                                                <Run Text="  —  "/>
+                                                <Run Text="{Binding IP, Mode=OneWay}"/>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </StackPanel>
+                        </StackPanel>
+
                         <StackPanel Orientation="Horizontal">
                             <Label Width="200">On Startup:</Label>
                             <ComboBox Name="cbAddOnStartup" Width="200">

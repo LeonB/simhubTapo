@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using TapoDevices;
 
 namespace LeonB.Tapo
 {
@@ -116,6 +119,108 @@ namespace LeonB.Tapo
             Plugin.SyncLegacyFields();
             ResetAddForm();
             RefreshDeviceList();
+        }
+
+        private async void Discover_Click(object sender, RoutedEventArgs e)
+        {
+            btnDiscover.IsEnabled = false;
+            lbDiscovered.Visibility = Visibility.Collapsed;
+
+            var timeout = TimeSpan.FromSeconds(5);
+            var discoverTask = TapoDiscovery.DiscoverAsync(timeout);
+            var start = DateTime.UtcNow;
+
+            while (!discoverTask.IsCompleted)
+            {
+                var remaining = (int)Math.Ceiling(Math.Max(0, (timeout - (DateTime.UtcNow - start)).TotalSeconds));
+                tbDiscoverStatus.Text = $"Scanning... ({remaining}s)";
+                await Task.Delay(200);
+            }
+
+            List<DiscoveredDevice> rawDevices;
+            try
+            {
+                rawDevices = await discoverTask;
+            }
+            catch (Exception ex)
+            {
+                tbDiscoverStatus.Text = "Scan error: " + ex.Message;
+                btnDiscover.IsEnabled = true;
+                return;
+            }
+
+            if (rawDevices.Count == 0)
+            {
+                tbDiscoverStatus.Text = "No devices found.";
+                btnDiscover.IsEnabled = true;
+                return;
+            }
+
+            tbDiscoverStatus.Text = $"Found {rawDevices.Count} device(s), fetching info...";
+
+            var factory = new TapoDeviceFactory(Plugin.Settings.Username, Plugin.Settings.Password);
+            var results = await Task.WhenAll(rawDevices.Select(raw => FetchPlugInfoAsync(factory, raw)));
+            var plugs = results.Where(p => p != null).ToList();
+
+            if (plugs.Count == 0)
+            {
+                tbDiscoverStatus.Text = "No smart plugs found.";
+            }
+            else
+            {
+                tbDiscoverStatus.Text = $"Found {plugs.Count} plug(s). Click one to fill the form:";
+                lbDiscovered.ItemsSource = plugs;
+                lbDiscovered.Visibility = Visibility.Visible;
+            }
+
+            btnDiscover.IsEnabled = true;
+        }
+
+        private static async Task<DiscoveredPlugInfo> FetchPlugInfoAsync(TapoDeviceFactory factory, DiscoveredDevice raw)
+        {
+            try
+            {
+                var plug = factory.CreatePlug(raw.IP, TimeSpan.FromSeconds(3));
+                try
+                {
+                    await plug.ConnectAsync().ConfigureAwait(false);
+                }
+                catch
+                {
+                    plug = factory.CreatePlug(raw.IP, TimeSpan.FromSeconds(3));
+                    await plug.ConnectOldAsync().ConfigureAwait(false);
+                }
+
+                var info = await plug.GetInfoAsync().ConfigureAwait(false);
+                if (info.Type == null || info.Type.IndexOf("PLUG", StringComparison.OrdinalIgnoreCase) < 0)
+                    return null;
+
+                var name = string.IsNullOrWhiteSpace(info.Nickname) ? info.Model : info.Nickname;
+                return new DiscoveredPlugInfo { IP = raw.IP, Name = name, Model = info.Model };
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private void lbDiscovered_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!(lbDiscovered.SelectedItem is DiscoveredPlugInfo device))
+                return;
+
+            tbIP.Text = device.IP;
+            if (string.IsNullOrWhiteSpace(tbName.Text) && _editingName == null)
+                tbName.Text = device.Name;
+
+            lbDiscovered.SelectedItem = null;
+        }
+
+        private class DiscoveredPlugInfo
+        {
+            public string IP { get; set; }
+            public string Name { get; set; }
+            public string Model { get; set; }
         }
 
         private void DeleteDevice_Click(object sender, RoutedEventArgs e)
