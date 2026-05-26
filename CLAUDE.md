@@ -13,6 +13,12 @@ msbuild .\TapoPlugin.sln /p:Configuration=Release
 
 After a successful build, restart SimHub to pick up the new plugin DLL.
 
+**Always verify the project builds successfully after every code change before committing.** Use `/p:PostBuildEvent=""` to skip the XCOPY step when SimHub is not installed in the build environment:
+
+```powershell
+$env:SIMHUB_INSTALL_PATH = "C:\Program Files (x86)\SimHub\"; & "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" "TapoPlugin.sln" /p:Configuration=Debug "/p:PostBuildEvent=" /v:minimal
+```
+
 ## Language version
 
 The project targets **.NET Framework 4.8** and **C# 7.3**. Do not use C# 8+ syntax (e.g. `is not`, `??=`, switch expressions, default interface members) — the WPF temporary project the build system generates enforces this strictly and will fail with a clear `error CS8370` if violated.
