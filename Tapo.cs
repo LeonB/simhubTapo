@@ -16,7 +16,7 @@ namespace LeonB.Tapo
 
         public DataPluginDemoSettings Settings;
 
-        private static TapoDevices.TapoDeviceFactory tapo;
+        private TapoDevices.TapoDeviceFactory tapo;
 
         /// <summary>
         /// Instance of the current plugin manager
