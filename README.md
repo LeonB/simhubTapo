@@ -7,11 +7,12 @@ The plugin connects to Tapo devices on your local network using your Tapo accoun
 ## Features
 
 - SimHub plugin named `Tapo`
-- Settings panel for Tapo username, password, and smart plug IP addresses
-- SimHub actions:
-  - `TapoOn`
-  - `TapoOff`
-  - `TapoToggle`
+- Settings panel for Tapo username, password, and named smart plug devices
+- Per-device SimHub actions registered under each device's configured name:
+  - `{Name} On`
+  - `{Name} Off`
+  - `{Name} Toggle`
+- Per-device startup and shutdown actions (on SimHub start/stop)
 - Local network control through the included `tapo-devices` library
 - Post-build copy step for installing the plugin into the SimHub folder
 
@@ -43,9 +44,8 @@ In the SimHub plugin settings, enter:
 
 - `User`: your Tapo account email or username
 - `Password`: your Tapo account password
-- `IP`: the local IP address of a Tapo smart plug
 
-Use `Add Device` to save the IP address. Select a saved device and use `Remove Selected` to remove it. For best results, reserve plug IP addresses in your router so they do not change.
+For each Tapo device, fill in a unique `Name`, its local `IP` address, and optionally the actions to run `On Startup` and `On Shutdown`. Click `Add Device` to save. Click a saved device to edit it, or click the trash icon next to it to remove it. For best results, reserve plug IP addresses in your router so they do not change.
 
 ## Building
 
@@ -81,11 +81,13 @@ Restart SimHub after copying the files.
 
 ## Usage In SimHub
 
-After the plugin is installed and configured, create a SimHub control mapping, event, or button action and select one of the plugin actions:
+After the plugin is installed and configured, create a SimHub control mapping, event, or button action and select one of the per-device actions. For a device named `Monitor`, the available actions are:
 
-- `TapoOn`: turns the configured plugs on
-- `TapoOff`: turns the configured plugs off
-- `TapoToggle`: reads each configured plug state, then switches it to the opposite state
+- `Monitor On`: turns the plug on
+- `Monitor Off`: turns the plug off
+- `Monitor Toggle`: reads the current plug state and switches it to the opposite state
+
+Each device gets its own set of actions using the name you configured in the settings panel.
 
 ## Troubleshooting
 
