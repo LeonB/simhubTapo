@@ -106,7 +106,7 @@ namespace LeonB.Tapo
                 async (mgr, arg) => await ExecuteDeviceActionAsync("manual", "On", ip).ConfigureAwait(false));
             PluginManager.AddAction(name + " Off", GetType(),
                 async (mgr, arg) => await ExecuteDeviceActionAsync("manual", "Off", ip).ConfigureAwait(false));
-            PluginManager.AddAction(name + "Toggle", GetType(),
+            PluginManager.AddAction(name + " Toggle", GetType(),
                 async (mgr, arg) => await ExecuteDeviceActionAsync("manual", "Toggle", ip).ConfigureAwait(false));
         }
 
@@ -116,7 +116,7 @@ namespace LeonB.Tapo
 
             PluginManager.ClearActions(GetType(), name + " On");
             PluginManager.ClearActions(GetType(), name + " Off");
-            PluginManager.ClearActions(GetType(), name + "Toggle");
+            PluginManager.ClearActions(GetType(), name + " Toggle");
         }
 
         private async Task ExecuteDeviceActionAsync(string context, string action, string deviceIp)
