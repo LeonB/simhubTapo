@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Threading;
 using TapoDevices;
 
 namespace LeonB.Tapo
@@ -16,6 +19,8 @@ namespace LeonB.Tapo
         public Tapoer Plugin { get; }
 
         private string _editingName = null;
+        private DispatcherTimer _credentialCheckTimer;
+        private CancellationTokenSource _credentialCheckCts;
 
         public SettingsControl()
         {
@@ -34,11 +39,100 @@ namespace LeonB.Tapo
         private void tbUser_TextChanged(object sender, TextChangedEventArgs e)
         {
             Plugin.Settings.Username = tbUser.Text;
+            ScheduleCredentialCheck();
         }
 
         private void tbPassword_PasswordChanged(object sender, RoutedEventArgs e)
         {
             Plugin.Settings.Password = tbPassword.Password;
+            ScheduleCredentialCheck();
+        }
+
+        private void ScheduleCredentialCheck()
+        {
+            if (_credentialCheckTimer == null)
+            {
+                _credentialCheckTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1500) };
+                _credentialCheckTimer.Tick += (s, e) => { _credentialCheckTimer.Stop(); CheckCredentialsAsync(); };
+            }
+            _credentialCheckTimer.Stop();
+            _credentialCheckTimer.Start();
+            tbCredentialStatus.Text = "";
+        }
+
+        private async void CheckCredentialsAsync()
+        {
+            var device = Plugin?.Settings?.Devices?.FirstOrDefault();
+            if (device == null)
+            {
+                tbCredentialStatus.Text = "";
+                return;
+            }
+
+            _credentialCheckCts?.Cancel();
+            _credentialCheckCts = new CancellationTokenSource();
+            var token = _credentialCheckCts.Token;
+
+            tbCredentialStatus.Text = "Checking...";
+            tbCredentialStatus.Foreground = new SolidColorBrush(Colors.Gray);
+
+            var factory = new TapoDeviceFactory(Plugin.Settings.Username, Plugin.Settings.Password);
+            var plug = factory.CreatePlug(device.IP, TimeSpan.FromSeconds(3));
+
+            bool success = false;
+            bool authFailed = false;
+            bool connectionFailed = false;
+
+            try
+            {
+                await plug.ConnectAsync();
+                success = true;
+            }
+            catch (Exception klapEx)
+            {
+                if (IsForbiddenResponse(klapEx))
+                {
+                    authFailed = true;
+                }
+                else
+                {
+                    plug = factory.CreatePlug(device.IP, TimeSpan.FromSeconds(3));
+                    try
+                    {
+                        await plug.ConnectOldAsync();
+                        success = true;
+                    }
+                    catch (Exception legacyEx)
+                    {
+                        if (IsForbiddenResponse(legacyEx))
+                            authFailed = true;
+                        else
+                            connectionFailed = true;
+                    }
+                }
+            }
+
+            if (token.IsCancellationRequested) return;
+
+            if (success)
+            {
+                tbCredentialStatus.Text = "✓ Credentials OK";
+                tbCredentialStatus.Foreground = new SolidColorBrush(Colors.Green);
+            }
+            else if (authFailed)
+            {
+                tbCredentialStatus.Text = "✗ Authentication failed";
+                tbCredentialStatus.Foreground = new SolidColorBrush(Colors.Red);
+            }
+            else if (connectionFailed)
+            {
+                tbCredentialStatus.Text = "✗ Could not connect — check credentials";
+                tbCredentialStatus.Foreground = new SolidColorBrush(Colors.OrangeRed);
+            }
+            else
+            {
+                tbCredentialStatus.Text = "";
+            }
         }
 
         private void AddDevice_Click(object sender, RoutedEventArgs e)
@@ -159,49 +253,102 @@ namespace LeonB.Tapo
             tbDiscoverStatus.Text = $"Found {rawDevices.Count} device(s), fetching info...";
 
             var factory = new TapoDeviceFactory(Plugin.Settings.Username, Plugin.Settings.Password);
-            var results = await Task.WhenAll(rawDevices.Select(raw => FetchPlugInfoAsync(factory, raw)));
-            var plugs = results.Where(p => p != null).ToList();
+            var fetchResults = await Task.WhenAll(rawDevices.Select(raw => FetchPlugInfoAsync(factory, raw)));
+            var allItems = fetchResults.Where(r => r.Plug != null).Select(r => r.Plug).ToList();
 
-            if (plugs.Count == 0)
+            if (allItems.Count == 0)
             {
                 tbDiscoverStatus.Text = "No smart plugs found.";
             }
             else
             {
-                tbDiscoverStatus.Text = $"Found {plugs.Count} plug(s). Click one to fill the form:";
-                lbDiscovered.ItemsSource = plugs;
+                var confirmed = allItems.Count(p => !p.AuthFailed);
+                var needCreds = allItems.Count(p => p.AuthFailed);
+
+                if (needCreds == 0)
+                    tbDiscoverStatus.Text = $"Found {confirmed} plug(s). Click one to fill the form:";
+                else if (confirmed == 0)
+                    tbDiscoverStatus.Text = $"Found {needCreds} plug(s) — fix credentials to see names. Click one to fill the form:";
+                else
+                    tbDiscoverStatus.Text = $"Found {confirmed} plug(s), {needCreds} more need credentials. Click one to fill the form:";
+
+                lbDiscovered.ItemsSource = allItems;
                 lbDiscovered.Visibility = Visibility.Visible;
             }
 
             btnDiscover.IsEnabled = true;
         }
 
-        private static async Task<DiscoveredPlugInfo> FetchPlugInfoAsync(TapoDeviceFactory factory, DiscoveredDevice raw)
+        private static async Task<FetchResult> FetchPlugInfoAsync(TapoDeviceFactory factory, DiscoveredDevice raw)
         {
+            var plug = factory.CreatePlug(raw.IP, TimeSpan.FromSeconds(3));
             try
             {
-                var plug = factory.CreatePlug(raw.IP, TimeSpan.FromSeconds(3));
+                await plug.ConnectAsync().ConfigureAwait(false);
+            }
+            catch (Exception klapEx)
+            {
+                if (IsForbiddenResponse(klapEx))
+                    return AuthFailedResult(raw);
+
+                plug = factory.CreatePlug(raw.IP, TimeSpan.FromSeconds(3));
                 try
                 {
-                    await plug.ConnectAsync().ConfigureAwait(false);
-                }
-                catch
-                {
-                    plug = factory.CreatePlug(raw.IP, TimeSpan.FromSeconds(3));
                     await plug.ConnectOldAsync().ConfigureAwait(false);
                 }
+                catch (Exception legacyEx)
+                {
+                    if (IsForbiddenResponse(legacyEx))
+                        return AuthFailedResult(raw);
+                    return LooksLikePlug(raw.Model) ? AuthFailedResult(raw) : new FetchResult();
+                }
+            }
 
+            try
+            {
                 var info = await plug.GetInfoAsync().ConfigureAwait(false);
                 if (info.Type == null || info.Type.IndexOf("PLUG", StringComparison.OrdinalIgnoreCase) < 0)
-                    return null;
+                    return new FetchResult();
 
                 var name = string.IsNullOrWhiteSpace(info.Nickname) ? info.Model : info.Nickname;
-                return new DiscoveredPlugInfo { IP = raw.IP, Name = name, Model = info.Model };
+                return new FetchResult { Plug = new DiscoveredPlugInfo { IP = raw.IP, Name = name, Model = info.Model } };
             }
             catch
             {
-                return null;
+                return new FetchResult();
             }
+        }
+
+        private static FetchResult AuthFailedResult(DiscoveredDevice raw)
+        {
+            return new FetchResult
+            {
+                AuthFailed = true,
+                Plug = new DiscoveredPlugInfo { IP = raw.IP, Name = raw.Model, Model = raw.Model, AuthFailed = true }
+            };
+        }
+
+        private static bool LooksLikePlug(string model)
+        {
+            return !string.IsNullOrEmpty(model) && model.Length >= 2
+                && (model[0] == 'P' || model[0] == 'p') && char.IsDigit(model[1]);
+        }
+
+        private static bool IsForbiddenResponse(Exception ex)
+        {
+            while (ex != null)
+            {
+                if (ex.Message.Contains("403") || ex.Message.Contains("Forbidden"))
+                    return true;
+                ex = ex.InnerException;
+            }
+            return false;
+        }
+
+        private class FetchResult
+        {
+            public DiscoveredPlugInfo Plug { get; set; }
+            public bool AuthFailed { get; set; }
         }
 
         private void lbDiscovered_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -221,6 +368,7 @@ namespace LeonB.Tapo
             public string IP { get; set; }
             public string Name { get; set; }
             public string Model { get; set; }
+            public bool AuthFailed { get; set; }
         }
 
         private void DeleteDevice_Click(object sender, RoutedEventArgs e)

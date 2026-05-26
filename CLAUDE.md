@@ -30,6 +30,7 @@ cd libs\tapo-devices\Src\TapoDevices.Tests
 dotnet test
 ```
 
+
 To run just the integration test (discovers real devices on the local network) and see output:
 
 ```powershell
@@ -49,6 +50,8 @@ The plugin is a single SimHub plugin class (`Tapoer` in `Tapo.cs`) that implemen
 **SimHub actions** are registered per device in `Init()` using the device's `Name` as a prefix: `{Name} On`, `{Name} Off`, `{Name}Toggle`. `RegisterDeviceActions` / `UnregisterDeviceActions` (using `PluginManager.ClearActions(Type, prefix)`) allow live re-registration from the settings UI without a SimHub restart. `PluginManager` has no `RemoveAction` method — `ClearActions(Type, string prefix)` is the only way to remove individual actions.
 
 **Device communication** goes through the vendored `libs/tapo-devices` library (`TapoDeviceFactory`, `TapoPlug`). Connection always tries the modern KLAP protocol first; if that fails with anything other than HTTP 403, it retries with the legacy plaintext protocol. A 403 is treated as a configuration error (third-party access not enabled in the Tapo app) and surfaced immediately without fallback.
+
+**Authentication failure detection** is unreliable because wrong credentials do not produce HTTP 403 in practice — the KLAP handshake fails with a generic "Error while performing handshake" and the legacy endpoint may return HTML `200 OK` instead of JSON, neither of which is distinguishable from a protocol-incompatible device. The convention used throughout is: explicit 403 → definitive auth failure; both KLAP and legacy fail for any other reason → treat as a probable credentials issue (surfaced with a softer "could not connect" message rather than "authentication failed"). Do not attempt to infer auth failure from the specific exception message text.
 
 **Lifecycle actions** (`OnStartup`, `OnShutdown`) are per-device. Startup actions fire-and-forget from `Init()`. Shutdown actions block synchronously (up to 10 s) in `End()` via `ExecuteDeviceLifecycleActionsAndWait`.
 
