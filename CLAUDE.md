@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Build
 
-**Always verify the project builds successfully after every code change before committing.**
+**Always verify the project builds successfully after every code change before committing. Never commit without explicit user approval.**
 
 Debug builds compile only — the copy to SimHub is skipped:
 
