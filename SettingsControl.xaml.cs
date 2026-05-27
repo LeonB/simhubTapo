@@ -19,6 +19,8 @@ namespace LeonB.Tapo
         public Tapoer Plugin { get; }
 
         private string _editingName = null;
+        private string _pendingMac = null;
+        private string _pendingMacForIp = null;
         private DispatcherTimer _credentialCheckTimer;
         private CancellationTokenSource _credentialCheckCts;
 
@@ -184,6 +186,10 @@ namespace LeonB.Tapo
 
             Plugin.NormalizeDeviceSettings();
 
+            var knownMac = (_pendingMacForIp != null && string.Equals(_pendingMacForIp, ip, StringComparison.OrdinalIgnoreCase))
+                ? (_pendingMac ?? "")
+                : "";
+
             if (_editingName != null)
             {
                 var existing = Plugin.Settings.Devices.FirstOrDefault(d => string.Equals(d.Name, _editingName, StringComparison.OrdinalIgnoreCase));
@@ -192,9 +198,13 @@ namespace LeonB.Tapo
                     Plugin.UnregisterDeviceActions(existing.Name);
                     existing.Name = name;
                     existing.IP = ip;
+                    if (!string.IsNullOrEmpty(knownMac))
+                        existing.MAC = knownMac;
                     existing.OnStartup = GetSelectedComboBoxText(cbAddOnStartup);
                     existing.OnShutdown = GetSelectedComboBoxText(cbAddOnShutdown);
                     Plugin.RegisterDeviceActions(existing.Name, existing.IP);
+                    if (string.IsNullOrEmpty(existing.MAC))
+                        FetchAndUpdateMacAsync(existing);
                 }
             }
             else if (!Plugin.Settings.Devices.Any(d => string.Equals(d.IP, ip, StringComparison.OrdinalIgnoreCase)))
@@ -203,11 +213,14 @@ namespace LeonB.Tapo
                 {
                     Name = name,
                     IP = ip,
+                    MAC = knownMac,
                     OnStartup = GetSelectedComboBoxText(cbAddOnStartup),
                     OnShutdown = GetSelectedComboBoxText(cbAddOnShutdown)
                 };
                 Plugin.Settings.Devices.Add(device);
                 Plugin.RegisterDeviceActions(device.Name, device.IP);
+                if (string.IsNullOrEmpty(device.MAC))
+                    FetchAndUpdateMacAsync(device);
             }
 
             Plugin.SyncLegacyFields();
@@ -311,7 +324,7 @@ namespace LeonB.Tapo
                     return new FetchResult();
 
                 var name = string.IsNullOrWhiteSpace(info.Nickname) ? info.Model : info.Nickname;
-                return new FetchResult { Plug = new DiscoveredPlugInfo { IP = raw.IP, Name = name, Model = info.Model } };
+                return new FetchResult { Plug = new DiscoveredPlugInfo { IP = raw.IP, Name = name, Model = info.Model, MAC = info.MacAddress ?? "" } };
             }
             catch
             {
@@ -324,7 +337,7 @@ namespace LeonB.Tapo
             return new FetchResult
             {
                 AuthFailed = true,
-                Plug = new DiscoveredPlugInfo { IP = raw.IP, Name = raw.Model, Model = raw.Model, AuthFailed = true }
+                Plug = new DiscoveredPlugInfo { IP = raw.IP, Name = raw.Model, Model = raw.Model, MAC = raw.MAC ?? "", AuthFailed = true }
             };
         }
 
@@ -360,6 +373,10 @@ namespace LeonB.Tapo
             if (string.IsNullOrWhiteSpace(tbName.Text) && _editingName == null)
                 tbName.Text = device.Name;
 
+            _pendingMac = device.MAC;
+            _pendingMacForIp = device.IP;
+            UpdateMacDisplay(device.MAC);
+
             lbDiscovered.SelectedItem = null;
         }
 
@@ -368,6 +385,7 @@ namespace LeonB.Tapo
             public string IP { get; set; }
             public string Name { get; set; }
             public string Model { get; set; }
+            public string MAC { get; set; }
             public bool AuthFailed { get; set; }
         }
 
@@ -401,6 +419,7 @@ namespace LeonB.Tapo
             tbIP.Text = device.IP;
             SelectComboBoxItem(cbAddOnStartup, device.OnStartup);
             SelectComboBoxItem(cbAddOnShutdown, device.OnShutdown);
+            UpdateMacDisplay(device.MAC);
             btnAddDevice.Content = "Update Device";
             btnCancelEdit.Visibility = Visibility.Visible;
         }
@@ -414,10 +433,13 @@ namespace LeonB.Tapo
         private void ResetAddForm()
         {
             _editingName = null;
+            _pendingMac = null;
+            _pendingMacForIp = null;
             tbName.Text = "";
             tbNameError.Visibility = Visibility.Collapsed;
             tbIP.Text = "";
             tbIPError.Visibility = Visibility.Collapsed;
+            UpdateMacDisplay("");
             SelectComboBoxItem(cbAddOnStartup, "");
             SelectComboBoxItem(cbAddOnShutdown, "");
             btnAddDevice.Content = "Add Device";
@@ -444,6 +466,45 @@ namespace LeonB.Tapo
         {
             var item = comboBox.SelectedItem as ComboBoxItem;
             return item == null || item.Content == null ? "" : item.Content.ToString();
+        }
+
+        private async void FetchAndUpdateMacAsync(TapoDeviceConfig device)
+        {
+            var factory = new TapoDeviceFactory(Plugin.Settings.Username, Plugin.Settings.Password);
+            var plug = factory.CreatePlug(device.IP, TimeSpan.FromSeconds(5));
+            try { await plug.ConnectAsync(); }
+            catch
+            {
+                plug = factory.CreatePlug(device.IP, TimeSpan.FromSeconds(5));
+                try { await plug.ConnectOldAsync(); }
+                catch { return; }
+            }
+            try
+            {
+                var info = await plug.GetInfoAsync();
+                if (!string.IsNullOrWhiteSpace(info.MacAddress))
+                {
+                    device.MAC = info.MacAddress;
+                    RefreshDeviceList();
+                    if (_editingName != null && string.Equals(_editingName, device.Name, StringComparison.OrdinalIgnoreCase))
+                        UpdateMacDisplay(device.MAC);
+                }
+            }
+            catch { }
+        }
+
+        private void UpdateMacDisplay(string mac)
+        {
+            if (string.IsNullOrEmpty(mac))
+            {
+                pnlMac.Visibility = Visibility.Collapsed;
+                tbMacDisplay.Text = "";
+            }
+            else
+            {
+                tbMacDisplay.Text = mac;
+                pnlMac.Visibility = Visibility.Visible;
+            }
         }
 
         private void RefreshDeviceList()

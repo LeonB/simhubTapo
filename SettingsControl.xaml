@@ -43,6 +43,11 @@
                             </StackPanel>
                         </StackPanel>
 
+                        <StackPanel x:Name="pnlMac" Orientation="Horizontal" Visibility="Collapsed">
+                            <Label Width="200">MAC:</Label>
+                            <TextBlock Name="tbMacDisplay" VerticalAlignment="Center" FontFamily="Consolas" Foreground="Gray"/>
+                        </StackPanel>
+
                         <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                             <Label Width="200"></Label>
                             <StackPanel>

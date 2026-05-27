@@ -6,6 +6,7 @@ namespace LeonB.Tapo
     {
         public string Name { get; set; } = "";
         public string IP { get; set; } = "";
+        public string MAC { get; set; } = "";
         public string OnStartup { get; set; } = "";
         public string OnShutdown { get; set; } = "";
 
@@ -13,7 +14,8 @@ namespace LeonB.Tapo
         {
             var startup = string.IsNullOrEmpty(OnStartup) ? "-" : OnStartup;
             var shutdown = string.IsNullOrEmpty(OnShutdown) ? "-" : OnShutdown;
-            return Name + " (" + IP + ")  Startup: " + startup + ", Shutdown: " + shutdown;
+            var mac = string.IsNullOrEmpty(MAC) ? "" : "  MAC: " + MAC;
+            return Name + " (" + IP + ")" + mac + "  Startup: " + startup + ", Shutdown: " + shutdown;
         }
     }
 

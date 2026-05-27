@@ -313,6 +313,7 @@ namespace LeonB.Tapo
                 {
                     Name = d.Name ?? "",
                     IP = string.IsNullOrWhiteSpace(d.IP) ? "" : d.IP.Trim(),
+                    MAC = d.MAC ?? "",
                     OnStartup = d.OnStartup ?? "",
                     OnShutdown = d.OnShutdown ?? ""
                 })
