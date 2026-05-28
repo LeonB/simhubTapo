@@ -1,17 +1,16 @@
-﻿using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace TapoDevices
 {
     class TapoRequest<TParams>
     {
-        [JsonPropertyName("method")]
+        [JsonProperty("method")]
         public string Method { get; set; }
 
-        [JsonPropertyName("params")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonProperty("params", NullValueHandling = NullValueHandling.Ignore)]
         public TParams Parameters { get; set; }
 
-        [JsonPropertyName("requestTimeMils")]
+        [JsonProperty("requestTimeMils")]
         public long RequestTimeMilliseconds { get; set; }
     }
 }

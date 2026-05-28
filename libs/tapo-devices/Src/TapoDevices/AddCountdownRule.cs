@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace TapoDevices
 {
@@ -9,22 +9,22 @@ namespace TapoDevices
             /// <summary>
             /// Is rule enabled.
             /// </summary>
-            [JsonPropertyName("enable")]
+            [JsonProperty("enable")]
             public bool Enable { get; set; }
 
             /// <summary>
             /// Delay before changing state, in seconds.
             /// </summary>
-            [JsonPropertyName("delay")]
+            [JsonProperty("delay")]
             public int Delay { get; set; }
 
-            [JsonPropertyName("desired_states")]
+            [JsonProperty("desired_states")]
             public ParamsStates DesiredStates { get; set; }
         }
 
         public class ParamsStates
         {
-            [JsonPropertyName("on")]
+            [JsonProperty("on")]
             public bool On { get; set; }
         }
 

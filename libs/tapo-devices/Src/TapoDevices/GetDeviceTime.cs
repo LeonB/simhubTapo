@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace TapoDevices
 {
@@ -14,19 +14,19 @@ namespace TapoDevices
             /// <summary>
             /// Device time, in Unix seconds.
             /// </summary>
-            [JsonPropertyName("timestamp")]
+            [JsonProperty("timestamp")]
             public long Timestamp { get; set; }
 
             /// <summary>
             /// Offset from UTC, in minutes.
             /// </summary>
-            [JsonPropertyName("time_diff")]
+            [JsonProperty("time_diff")]
             public int TimeDiff { get; set; }
 
             /// <summary>
             /// Timezone name.
             /// </summary>
-            [JsonPropertyName("region")]
+            [JsonProperty("region")]
             public string Region { get; set; }
         }
 

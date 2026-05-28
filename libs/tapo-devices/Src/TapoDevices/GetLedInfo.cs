@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace TapoDevices
 {
@@ -19,16 +19,16 @@ namespace TapoDevices
             /// <summary>
             /// Current status of LED (on/off).
             /// </summary>
-            [JsonPropertyName("led_status")]
+            [JsonProperty("led_status")]
             public bool LedStatus { get; set; }
 
             /// <summary>
             /// LED rule ("always", "never", "night_mode").
             /// </summary>
-            [JsonPropertyName("led_rule")]
+            [JsonProperty("led_rule")]
             public string LedRule { get; set; }
 
-            [JsonPropertyName("night_mode")]
+            [JsonProperty("night_mode")]
             public NightMode NightMode { get; set; }
         }
 
@@ -37,25 +37,25 @@ namespace TapoDevices
             /// <summary>
             /// Night mode type ("sunrise_sunset", "custom").
             /// </summary>
-            [JsonPropertyName("night_mode_type")]
+            [JsonProperty("night_mode_type")]
             public string NightModeType { get; set; }
 
             /// <summary>
             /// Start time, in minutes from day start.
             /// </summary>
-            [JsonPropertyName("start_time")]
+            [JsonProperty("start_time")]
             public int StartTime { get; set; }
 
             /// <summary>
             /// End time, in minutes from day start.
             /// </summary>
-            [JsonPropertyName("end_time")]
+            [JsonProperty("end_time")]
             public int EndTime { get; set; }
 
-            [JsonPropertyName("sunrise_offset")]
+            [JsonProperty("sunrise_offset")]
             public int SunriseOffset { get; set; }
 
-            [JsonPropertyName("sunset_offset")]
+            [JsonProperty("sunset_offset")]
             public int SunsetOffset { get; set; }
         }
 

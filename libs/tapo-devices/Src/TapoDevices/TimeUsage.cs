@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace TapoDevices
 {
@@ -7,19 +7,19 @@ namespace TapoDevices
         /// <summary>
         /// Today.
         /// </summary>
-        [JsonPropertyName("today")]
+        [JsonProperty("today")]
         public int Today { get; set; }
 
         /// <summary>
         /// Past 7 days.
         /// </summary>
-        [JsonPropertyName("past7")]
+        [JsonProperty("past7")]
         public int Past7 { get; set; }
 
         /// <summary>
         /// Past 30 days.
         /// </summary>
-        [JsonPropertyName("past30")]
+        [JsonProperty("past30")]
         public int Past30 { get; set; }
     }
 }

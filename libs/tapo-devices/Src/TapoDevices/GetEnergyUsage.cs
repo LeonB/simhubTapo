@@ -1,5 +1,5 @@
-﻿using System;
-using System.Text.Json.Serialization;
+using System;
+using Newtonsoft.Json;
 
 namespace TapoDevices
 {
@@ -20,7 +20,7 @@ namespace TapoDevices
             /// <summary>
             /// Current day runtime, in minutes.
             /// </summary>
-            [JsonPropertyName("today_runtime")]
+            [JsonProperty("today_runtime")]
             public int TodayRuntimeMinutes { get; set; }
 
             /// <summary>
@@ -31,7 +31,7 @@ namespace TapoDevices
             /// <summary>
             /// Current month runtime, in minutes.
             /// </summary>
-            [JsonPropertyName("month_runtime")]
+            [JsonProperty("month_runtime")]
             public int MonthRuntimeMinutes { get; set; }
 
             /// <summary>
@@ -42,7 +42,7 @@ namespace TapoDevices
             /// <summary>
             /// Current day energy, Wh.
             /// </summary>
-            [JsonPropertyName("today_energy")]
+            [JsonProperty("today_energy")]
             public int TodayEnergy { get; set; }
 
             /// <summary>
@@ -53,7 +53,7 @@ namespace TapoDevices
             /// <summary>
             /// Current month energy, Wh.
             /// </summary>
-            [JsonPropertyName("month_energy")]
+            [JsonProperty("month_energy")]
             public int MonthEnergy { get; set; }
 
             /// <summary>
@@ -64,7 +64,7 @@ namespace TapoDevices
             /// <summary>
             /// Current power, mW.
             /// </summary>
-            [JsonPropertyName("current_power")]
+            [JsonProperty("current_power")]
             public int CurrentPowerMilliwatts { get; set; }
 
             /// <summary>

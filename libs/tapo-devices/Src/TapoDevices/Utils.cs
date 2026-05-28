@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text.Json;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace TapoDevices
 {
@@ -9,12 +10,12 @@ namespace TapoDevices
     {
         public const string JsonMediaType = "application/json";
 
-        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings();
 
         private static long MillisecondsNow =>
             (long)Math.Round((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
 
-        public static bool ByteArraysEqual(ReadOnlySpan<byte> a1, ReadOnlySpan<byte> a2) => 
+        public static bool ByteArraysEqual(ReadOnlySpan<byte> a1, ReadOnlySpan<byte> a2) =>
             a1.SequenceEqual(a2);
 
         // Convert.ToHexString implementation for .NET Standard2.0
@@ -33,18 +34,17 @@ namespace TapoDevices
 
         public static byte[] Serialize<T>(T obj)
         {
-            return JsonSerializer.SerializeToUtf8Bytes(obj, SerializerOptions);
+            return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(obj, SerializerSettings));
         }
 
         public static T Deserialize<T>(byte[] bytes)
         {
-            var jsonUtfReader = new Utf8JsonReader(new ReadOnlySpan<byte>(bytes));
-            return JsonSerializer.Deserialize<T>(ref jsonUtfReader, SerializerOptions);
+            return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(bytes), SerializerSettings);
         }
 
         public static T Deserialize<T>(string jsonString)
         {
-            return JsonSerializer.Deserialize<T>(jsonString, SerializerOptions);
+            return JsonConvert.DeserializeObject<T>(jsonString, SerializerSettings);
         }
 
         public static TapoRequest<SecurePassthrough.Params> SecureEncode<TRequest>(ICryptoTransform encryptor, TRequest request)

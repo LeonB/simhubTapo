@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace TapoDevices
 {
@@ -16,19 +16,19 @@ namespace TapoDevices
 
         public class ResultBulb : Result
         {
-            [JsonPropertyName("time_usage")]
+            [JsonProperty("time_usage")]
             public TimeUsage TimeUsage { get; set; }
 
-            [JsonPropertyName("power_usage")]
+            [JsonProperty("power_usage")]
             public TimeUsage PowerUsage { get; set; }
 
-            [JsonPropertyName("saved_power")]
+            [JsonProperty("saved_power")]
             public TimeUsage SavedPower { get; set; }
         }
 
         public class ResultPlug : Result
         {
-            [JsonPropertyName("time_usage")]
+            [JsonProperty("time_usage")]
             public TimeUsage TimeUsage { get; set; }
         }
 

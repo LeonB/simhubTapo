@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using System.Text;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace TapoDevices
 {
@@ -13,100 +13,100 @@ namespace TapoDevices
 
         public class Result
         {
-            [JsonPropertyName("device_id")]
+            [JsonProperty("device_id")]
             public string DeviceId { get; set; }
 
-            [JsonPropertyName("fw_ver")]
+            [JsonProperty("fw_ver")]
             public string FirmwareVersion { get; set; }
 
-            [JsonPropertyName("hw_ver")]
+            [JsonProperty("hw_ver")]
             public string HardwareVersion { get; set; }
 
-            [JsonPropertyName("type")]
+            [JsonProperty("type")]
             public string Type { get; set; }
 
-            [JsonPropertyName("model")]
+            [JsonProperty("model")]
             public string Model { get; set; }
 
-            [JsonPropertyName("mac")]
+            [JsonProperty("mac")]
             public string MacAddress { get; set; }
 
-            [JsonPropertyName("hw_id")]
+            [JsonProperty("hw_id")]
             public string HardwareId { get; set; }
 
-            [JsonPropertyName("fw_id")]
+            [JsonProperty("fw_id")]
             public string FirmwareId { get; set; }
 
-            [JsonPropertyName("oem_id")]
+            [JsonProperty("oem_id")]
             public string OemId { get; set; }
 
-            [JsonPropertyName("overheated")]
+            [JsonProperty("overheated")]
             public bool Overheated { get; set; }
 
-            [JsonPropertyName("ip")]
+            [JsonProperty("ip")]
             public string IPAddress { get; set; }
 
-            [JsonPropertyName("time_diff")]
+            [JsonProperty("time_diff")]
             public int TimeDifference { get; set; }
 
-            [JsonPropertyName("ssid")]
+            [JsonProperty("ssid")]
             public string SSIDEncoded { get; set; }
 
             [JsonIgnore]
             public string SSID => Encoding.UTF8.GetString(Convert.FromBase64String(this.SSIDEncoded));
 
-            [JsonPropertyName("rssi")]
+            [JsonProperty("rssi")]
             public int Rssi { get; set; }
 
-            [JsonPropertyName("signal_level")]
+            [JsonProperty("signal_level")]
             public int SignalLevel { get; set; }
 
-            [JsonPropertyName("latitude")]
+            [JsonProperty("latitude")]
             public double Latitude { get; set; }
 
-            [JsonPropertyName("longitude")]
+            [JsonProperty("longitude")]
             public double Longitude { get; set; }
 
-            [JsonPropertyName("lang")]
+            [JsonProperty("lang")]
             public string Language { get; set; }
 
-            [JsonPropertyName("avatar")]
+            [JsonProperty("avatar")]
             public string Avatar { get; set; }
 
-            [JsonPropertyName("region")]
+            [JsonProperty("region")]
             public string Region { get; set; }
 
-            [JsonPropertyName("specs")]
+            [JsonProperty("specs")]
             public string Specs { get; set; }
 
-            [JsonPropertyName("nickname")]
+            [JsonProperty("nickname")]
             public string NicknameEncoded { get; set; }
 
             [JsonIgnore]
             public string Nickname => Encoding.UTF8.GetString(Convert.FromBase64String(this.NicknameEncoded));
 
-            [JsonPropertyName("has_set_location_info")]
+            [JsonProperty("has_set_location_info")]
             public bool HasSetLocationInfo { get; set; }
 
-            [JsonPropertyName("device_on")]
+            [JsonProperty("device_on")]
             public bool DeviceOn { get; set; }
         }
 
         public class ResultBulb : Result
         {
-            [JsonPropertyName("brightness")]
+            [JsonProperty("brightness")]
             public int Brightness { get; set; }
 
-            [JsonPropertyName("hue")]
+            [JsonProperty("hue")]
             public int Hue { get; set; }
 
-            [JsonPropertyName("saturation")]
+            [JsonProperty("saturation")]
             public int Saturation { get; set; }
 
-            [JsonPropertyName("color_temp")]
+            [JsonProperty("color_temp")]
             public int ColorTemperature { get; set; }
 
-            [JsonPropertyName("color_temp_range")]
+            [JsonProperty("color_temp_range")]
             public int[] ColorTemperatureRange { get; set; }
         }
 

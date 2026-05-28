@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace TapoDevices
 {
@@ -88,25 +88,25 @@ namespace TapoDevices
 
         private class DiscoveryResponse
         {
-            [JsonPropertyName("error_code")]
+            [JsonProperty("error_code")]
             public int ErrorCode { get; set; }
 
-            [JsonPropertyName("result")]
+            [JsonProperty("result")]
             public DiscoveryResult Result { get; set; }
         }
 
         private class DiscoveryResult
         {
-            [JsonPropertyName("ip")]
+            [JsonProperty("ip")]
             public string IP { get; set; }
 
-            [JsonPropertyName("mac")]
+            [JsonProperty("mac")]
             public string MAC { get; set; }
 
-            [JsonPropertyName("device_id")]
+            [JsonProperty("device_id")]
             public string DeviceId { get; set; }
 
-            [JsonPropertyName("device_model")]
+            [JsonProperty("device_model")]
             public string DeviceModel { get; set; }
         }
     }

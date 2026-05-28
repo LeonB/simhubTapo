@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace TapoDevices
 {
@@ -6,8 +6,7 @@ namespace TapoDevices
     {
         public class Params
         {
-            [JsonPropertyName("device_on")]
-            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            [JsonProperty("device_on", NullValueHandling = NullValueHandling.Ignore)]
             public bool? DeviceOn { get; set; }
         }
 
@@ -19,24 +18,21 @@ namespace TapoDevices
             /// <remarks>
             /// Range 1..100.
             /// </remarks>
-            [JsonPropertyName("brightness")]
-            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            [JsonProperty("brightness", NullValueHandling = NullValueHandling.Ignore)]
             public int? Brightness { get; set; }
 
             /// <summary>
             /// Hue.
             /// </summary>
             /// <remarks>Range 0..359.</remarks>
-            [JsonPropertyName("hue")]
-            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            [JsonProperty("hue", NullValueHandling = NullValueHandling.Ignore)]
             public int? Hue { get; set; }
 
             /// <summary>
             /// Saturation.
             /// </summary>
             /// <remarks>Range 0..100.</remarks>
-            [JsonPropertyName("saturation")]
-            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            [JsonProperty("saturation", NullValueHandling = NullValueHandling.Ignore)]
             public int? Saturation { get; set; }
 
             /// <summary>
@@ -45,8 +41,7 @@ namespace TapoDevices
             /// <remarks>
             /// Range 2500..6500. Set to 0 to apply specified hue and saturation.
             /// </remarks>
-            [JsonPropertyName("color_temp")]
-            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            [JsonProperty("color_temp", NullValueHandling = NullValueHandling.Ignore)]
             public int? ColorTemperature { get; set; }
         }
 

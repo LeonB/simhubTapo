@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace TapoDevices
 {
@@ -6,13 +6,13 @@ namespace TapoDevices
     {
         public class Params
         {
-            [JsonPropertyName("key")]
+            [JsonProperty("key")]
             public string Key { get; set; }
         }
 
         public class Result
         {
-            [JsonPropertyName("key")]
+            [JsonProperty("key")]
             public string Key { get; set; }
         }
 

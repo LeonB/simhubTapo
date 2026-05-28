@@ -66,16 +66,6 @@ If you do not use the post-build step, copy the built files from `bin\Debug` or 
 
 - `Tapo.dll`
 - `TapoDevices.dll`
-- `System.Text.Json.dll`
-- `System.Text.Encodings.Web.dll`
-- `Microsoft.Bcl.AsyncInterfaces.dll`
-- `System.Buffers.dll`
-- `System.Formats.Asn1.dll`
-- `System.IO.Pipelines.dll`
-- `System.Memory.dll`
-- `System.Numerics.Vectors.dll`
-- `System.Runtime.CompilerServices.Unsafe.dll`
-- `System.ValueTuple.dll`
 
 Restart SimHub after copying the files.
 
