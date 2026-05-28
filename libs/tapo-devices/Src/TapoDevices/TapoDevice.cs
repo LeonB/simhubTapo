@@ -15,7 +15,7 @@ namespace TapoDevices
     /// <summary>
     /// Represents connection to generic Tapo device.
     /// </summary>
-    public class TapoDevice
+    public class TapoDevice : IDisposable
     {
         private readonly string username;
 
@@ -262,6 +262,13 @@ namespace TapoDevices
         // TODO: more control methods
 
         #endregion
+
+        public void Dispose()
+        {
+            this.encryptor?.Dispose();
+            this.decryptor?.Dispose();
+            this.client.Dispose();
+        }
 
         private bool IsConnected => this.klapSession != null || (this.encryptor != null && this.decryptor != null && this.token != null);
 

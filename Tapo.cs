@@ -177,41 +177,42 @@ namespace LeonB.Tapo
 
         private async Task ExecutePlugActionForDeviceAsync(string action, string deviceIp)
         {
-            var plug = await ConnectPlugAsync(deviceIp).ConfigureAwait(false);
-
-            if (string.Equals(action, "On", StringComparison.OrdinalIgnoreCase))
+            using (var plug = await ConnectPlugAsync(deviceIp).ConfigureAwait(false))
             {
-                SimHub.Logging.Current.Info("Turning on Tapo plug at " + deviceIp);
-                await plug.TurnOnAsync().ConfigureAwait(false);
-                return;
-            }
-
-            if (string.Equals(action, "Off", StringComparison.OrdinalIgnoreCase))
-            {
-                SimHub.Logging.Current.Info("Turning off Tapo plug at " + deviceIp);
-                await plug.TurnOffAsync().ConfigureAwait(false);
-                return;
-            }
-
-            if (string.Equals(action, "Toggle", StringComparison.OrdinalIgnoreCase))
-            {
-                var info = await plug.GetInfoAsync().ConfigureAwait(false);
-
-                if (info.DeviceOn)
-                {
-                    SimHub.Logging.Current.Info("Turning off Tapo plug at " + deviceIp);
-                    await plug.TurnOffAsync().ConfigureAwait(false);
-                }
-                else
+                if (string.Equals(action, "On", StringComparison.OrdinalIgnoreCase))
                 {
                     SimHub.Logging.Current.Info("Turning on Tapo plug at " + deviceIp);
                     await plug.TurnOnAsync().ConfigureAwait(false);
+                    return;
                 }
 
-                return;
-            }
+                if (string.Equals(action, "Off", StringComparison.OrdinalIgnoreCase))
+                {
+                    SimHub.Logging.Current.Info("Turning off Tapo plug at " + deviceIp);
+                    await plug.TurnOffAsync().ConfigureAwait(false);
+                    return;
+                }
 
-            SimHub.Logging.Current.Warn("Unknown Tapo action: " + action);
+                if (string.Equals(action, "Toggle", StringComparison.OrdinalIgnoreCase))
+                {
+                    var info = await plug.GetInfoAsync().ConfigureAwait(false);
+
+                    if (info.DeviceOn)
+                    {
+                        SimHub.Logging.Current.Info("Turning off Tapo plug at " + deviceIp);
+                        await plug.TurnOffAsync().ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        SimHub.Logging.Current.Info("Turning on Tapo plug at " + deviceIp);
+                        await plug.TurnOnAsync().ConfigureAwait(false);
+                    }
+
+                    return;
+                }
+
+                SimHub.Logging.Current.Warn("Unknown Tapo action: " + action);
+            }
         }
 
         private async Task<TapoPlug> ConnectPlugAsync(string deviceIp)
@@ -227,6 +228,7 @@ namespace LeonB.Tapo
             catch (Exception ex)
             {
                 klapException = ex;
+                plug.Dispose();
 
                 if (IsForbiddenResponse(ex))
                 {
@@ -246,6 +248,7 @@ namespace LeonB.Tapo
             }
             catch (Exception legacyException)
             {
+                plug.Dispose();
                 throw new InvalidOperationException(
                     "Tapo connection failed with both KLAP and legacy protocols. KLAP: " +
                     klapException.Message +

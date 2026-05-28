@@ -92,6 +92,8 @@ namespace LeonB.Tapo
             }
             catch (Exception klapEx)
             {
+                plug.Dispose();
+                plug = null;
                 if (IsForbiddenResponse(klapEx))
                 {
                     authFailed = true;
@@ -106,6 +108,8 @@ namespace LeonB.Tapo
                     }
                     catch (Exception legacyEx)
                     {
+                        plug.Dispose();
+                        plug = null;
                         if (IsForbiddenResponse(legacyEx))
                             authFailed = true;
                         else
@@ -113,6 +117,8 @@ namespace LeonB.Tapo
                     }
                 }
             }
+
+            plug?.Dispose();
 
             if (token.IsCancellationRequested) return;
 
@@ -294,41 +300,50 @@ namespace LeonB.Tapo
 
         private static async Task<FetchResult> FetchPlugInfoAsync(TapoDeviceFactory factory, DiscoveredDevice raw)
         {
-            var plug = factory.CreatePlug(raw.IP, TimeSpan.FromSeconds(3));
+            TapoPlug plug = null;
+
+            var klapPlug = factory.CreatePlug(raw.IP, TimeSpan.FromSeconds(3));
             try
             {
-                await plug.ConnectAsync().ConfigureAwait(false);
+                await klapPlug.ConnectAsync().ConfigureAwait(false);
+                plug = klapPlug;
             }
             catch (Exception klapEx)
             {
+                klapPlug.Dispose();
                 if (IsForbiddenResponse(klapEx))
                     return AuthFailedResult(raw);
 
-                plug = factory.CreatePlug(raw.IP, TimeSpan.FromSeconds(3));
+                var legacyPlug = factory.CreatePlug(raw.IP, TimeSpan.FromSeconds(3));
                 try
                 {
-                    await plug.ConnectOldAsync().ConfigureAwait(false);
+                    await legacyPlug.ConnectOldAsync().ConfigureAwait(false);
+                    plug = legacyPlug;
                 }
                 catch (Exception legacyEx)
                 {
+                    legacyPlug.Dispose();
                     if (IsForbiddenResponse(legacyEx))
                         return AuthFailedResult(raw);
                     return LooksLikePlug(raw.Model) ? AuthFailedResult(raw) : new FetchResult();
                 }
             }
 
-            try
+            using (plug)
             {
-                var info = await plug.GetInfoAsync().ConfigureAwait(false);
-                if (info.Type == null || info.Type.IndexOf("PLUG", StringComparison.OrdinalIgnoreCase) < 0)
-                    return new FetchResult();
+                try
+                {
+                    var info = await plug.GetInfoAsync().ConfigureAwait(false);
+                    if (info.Type == null || info.Type.IndexOf("PLUG", StringComparison.OrdinalIgnoreCase) < 0)
+                        return new FetchResult();
 
-                var name = string.IsNullOrWhiteSpace(info.Nickname) ? info.Model : info.Nickname;
-                return new FetchResult { Plug = new DiscoveredPlugInfo { IP = raw.IP, Name = name, Model = info.Model, MAC = info.MacAddress ?? "" } };
-            }
-            catch
-            {
-                return new FetchResult();
+                    var name = string.IsNullOrWhiteSpace(info.Nickname) ? info.Model : info.Nickname;
+                    return new FetchResult { Plug = new DiscoveredPlugInfo { IP = raw.IP, Name = name, Model = info.Model, MAC = info.MacAddress ?? "" } };
+                }
+                catch
+                {
+                    return new FetchResult();
+                }
             }
         }
 
@@ -471,26 +486,45 @@ namespace LeonB.Tapo
         private async void FetchAndUpdateMacAsync(TapoDeviceConfig device)
         {
             var factory = new TapoDeviceFactory(Plugin.Settings.Username, Plugin.Settings.Password);
-            var plug = factory.CreatePlug(device.IP, TimeSpan.FromSeconds(5));
-            try { await plug.ConnectAsync(); }
-            catch
-            {
-                plug = factory.CreatePlug(device.IP, TimeSpan.FromSeconds(5));
-                try { await plug.ConnectOldAsync(); }
-                catch { return; }
-            }
+            TapoPlug plug = null;
+
+            var klapPlug = factory.CreatePlug(device.IP, TimeSpan.FromSeconds(5));
             try
             {
-                var info = await plug.GetInfoAsync();
-                if (!string.IsNullOrWhiteSpace(info.MacAddress))
+                await klapPlug.ConnectAsync();
+                plug = klapPlug;
+            }
+            catch
+            {
+                klapPlug.Dispose();
+                var legacyPlug = factory.CreatePlug(device.IP, TimeSpan.FromSeconds(5));
+                try
                 {
-                    device.MAC = info.MacAddress;
-                    RefreshDeviceList();
-                    if (_editingName != null && string.Equals(_editingName, device.Name, StringComparison.OrdinalIgnoreCase))
-                        UpdateMacDisplay(device.MAC);
+                    await legacyPlug.ConnectOldAsync();
+                    plug = legacyPlug;
+                }
+                catch
+                {
+                    legacyPlug.Dispose();
+                    return;
                 }
             }
-            catch { }
+
+            using (plug)
+            {
+                try
+                {
+                    var info = await plug.GetInfoAsync();
+                    if (!string.IsNullOrWhiteSpace(info.MacAddress))
+                    {
+                        device.MAC = info.MacAddress;
+                        RefreshDeviceList();
+                        if (_editingName != null && string.Equals(_editingName, device.Name, StringComparison.OrdinalIgnoreCase))
+                            UpdateMacDisplay(device.MAC);
+                    }
+                }
+                catch { }
+            }
         }
 
         private void UpdateMacDisplay(string mac)
