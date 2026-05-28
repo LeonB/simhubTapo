@@ -48,37 +48,6 @@
                             <TextBlock Name="tbMacDisplay" VerticalAlignment="Center" FontFamily="Consolas" Foreground="Gray"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                            <Label Width="200"></Label>
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Name="btnDiscover" Content="Scan Network" Click="Discover_Click"/>
-                                    <TextBlock Name="tbDiscoverStatus" Margin="8,0,0,0" VerticalAlignment="Center" FontStyle="Italic"/>
-                                </StackPanel>
-                                <ListBox Name="lbDiscovered" Width="300" MaxHeight="120" Visibility="Collapsed" Margin="0,4,0,0"
-                                         HorizontalContentAlignment="Left"
-                                         SelectionChanged="lbDiscovered_SelectionChanged">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                                <TextBlock>
-                                                    <Run Text="{Binding Name, Mode=OneWay}"/>
-                                                    <Run Text="  —  "/>
-                                                    <Run Text="{Binding IP, Mode=OneWay}"/>
-                                                </TextBlock>
-                                                <TextBlock x:Name="tbCreds" Text="  (check credentials)" Foreground="OrangeRed" FontStyle="Italic" Visibility="Collapsed"/>
-                                            </StackPanel>
-                                            <DataTemplate.Triggers>
-                                                <DataTrigger Binding="{Binding AuthFailed}" Value="True">
-                                                    <Setter TargetName="tbCreds" Property="Visibility" Value="Visible"/>
-                                                </DataTrigger>
-                                            </DataTemplate.Triggers>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-                            </StackPanel>
-                        </StackPanel>
-
                         <StackPanel Orientation="Horizontal">
                             <Label Width="200">On Startup:</Label>
                             <ComboBox Name="cbAddOnStartup" Width="200">
@@ -135,6 +104,39 @@
                                 </ListBox.ItemTemplate>
                             </ListBox>
                         </StackPanel>
+                    </StackPanel>
+                </styles:SHSubSection>
+
+                <styles:SHSubSection Title="Discover Devices">
+                    <StackPanel>
+                        <TextBlock Foreground="Gray" FontStyle="Italic" Margin="0,0,0,6">
+                            Scan the local network for Tapo devices. Click a result to fill the form above.
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Name="btnDiscover" Content="Scan Network" Click="Discover_Click"/>
+                            <TextBlock Name="tbDiscoverStatus" Margin="8,0,0,0" VerticalAlignment="Center" FontStyle="Italic"/>
+                        </StackPanel>
+                        <ListBox Name="lbDiscovered" MaxHeight="160" Visibility="Collapsed" Margin="0,6,0,0"
+                                 HorizontalContentAlignment="Left"
+                                 SelectionChanged="lbDiscovered_SelectionChanged">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <TextBlock>
+                                            <Run Text="{Binding Name, Mode=OneWay}"/>
+                                            <Run Text="  —  "/>
+                                            <Run Text="{Binding IP, Mode=OneWay}"/>
+                                        </TextBlock>
+                                        <TextBlock x:Name="tbCreds" Text="  (check credentials)" Foreground="OrangeRed" FontStyle="Italic" Visibility="Collapsed"/>
+                                    </StackPanel>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding AuthFailed}" Value="True">
+                                            <Setter TargetName="tbCreds" Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
                     </StackPanel>
                 </styles:SHSubSection>
             </StackPanel>
