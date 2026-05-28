@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Target Name="MergeAssemblies" AfterTargets="Build" Condition="'$(SIMHUB_INSTALL_PATH)' != '' AND '$(Configuration)' == 'Release'">
+    <ItemGroup>
+      <ILRepackInput Include="$(TargetPath)" />
+      <ILRepackInput Include="$(TargetDir)TapoDevices.dll" />
+    </ItemGroup>
+    <ILRepack
+      Parallel="true"
+      Internalize="true"
+      InputAssemblies="@(ILRepackInput)"
+      LibraryPath="$(TargetDir);$(SIMHUB_INSTALL_PATH)"
+      OutputFile="$(TargetPath)"
+      TargetKind="Dll"
+      XmlDocumentation="false"
+    />
+  </Target>
+</Project>

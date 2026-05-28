@@ -120,6 +120,12 @@
     <ProjectReference Include="libs/tapo-devices/Src/TapoDevices/TapoDevices.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.34.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="sdkmenuicon.png" />
   </ItemGroup>
   <!-- <ItemGroup>
@@ -130,9 +136,8 @@
   </ItemGroup> -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 
-  <Target Name="CopyToSimHub" AfterTargets="Build" Condition="'$(SIMHUB_INSTALL_PATH)' != '' AND '$(Configuration)' == 'Release'">
-    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)TapoDevices.dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
-    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)$(TargetName).dll&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
+  <Target Name="CopyToSimHub" AfterTargets="MergeAssemblies" Condition="'$(SIMHUB_INSTALL_PATH)' != '' AND '$(Configuration)' == 'Release'">
+    <Exec Command="XCOPY /Y /R &quot;$(TargetPath)&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
