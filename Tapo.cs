@@ -1,4 +1,5 @@
 ﻿using GameReaderCommon;
+using Microsoft.Win32;
 using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
@@ -43,6 +44,7 @@ namespace LeonB.Tapo
         /// <param name="pluginManager"></param>
         public void End(PluginManager pluginManager)
         {
+            SystemEvents.PowerModeChanged -= OnPowerModeChanged;
             ExecuteDeviceLifecycleActionsAndWait("shutdown", TimeSpan.FromSeconds(10));
 
             // Save settings
@@ -72,10 +74,25 @@ namespace LeonB.Tapo
             Settings = this.ReadCommonSettings<DataPluginDemoSettings>("GeneralSettings", () => new DataPluginDemoSettings());
             NormalizeDeviceSettings();
 
+            SystemEvents.PowerModeChanged += OnPowerModeChanged;
+
             foreach (var device in Settings.Devices)
             {
                 RegisterDeviceActions(device.Name, device.IP);
                 _ = ExecuteDeviceActionAsync("startup", device.OnStartup, device.IP);
+            }
+        }
+
+        private void OnPowerModeChanged(object _, PowerModeChangedEventArgs e)
+        {
+            if (e.Mode == PowerModes.Suspend)
+            {
+                SimHub.Logging.Current.Info("Tapo: system suspending, running shutdown actions.");
+                ExecuteDeviceLifecycleActionsAndWait("sleep", TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(1));
+            }
+            else if (e.Mode == PowerModes.Resume)
+            {
+                _ = ExecuteOnResumeAsync();
             }
         }
 
@@ -122,8 +139,11 @@ namespace LeonB.Tapo
             }
         }
 
-        private void ExecuteDeviceLifecycleActionsAndWait(string lifecycleName, TimeSpan timeout)
+        private void ExecuteDeviceLifecycleActionsAndWait(string lifecycleName, TimeSpan timeout, TimeSpan connectionTimeout = default)
         {
+            if (connectionTimeout == default)
+                connectionTimeout = TimeSpan.FromSeconds(3);
+
             var devicesWithAction = Settings.Devices
                 .Where(d => !string.IsNullOrWhiteSpace(d.OnShutdown))
                 .ToList();
@@ -140,7 +160,7 @@ namespace LeonB.Tapo
                     try
                     {
                         SimHub.Logging.Current.Info("Running Tapo " + lifecycleName + " action: " + device.OnShutdown + " for " + device.IP);
-                        await EnsureFactoryAndExecuteForDeviceAsync(device.OnShutdown, device.IP).ConfigureAwait(false);
+                        await EnsureFactoryAndExecuteForDeviceAsync(device.OnShutdown, device.IP, connectionTimeout).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -162,8 +182,18 @@ namespace LeonB.Tapo
             }
         }
 
-        private async Task EnsureFactoryAndExecuteForDeviceAsync(string action, string deviceIp)
+        private async Task ExecuteOnResumeAsync()
         {
+            await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+            foreach (var device in Settings.Devices)
+                await ExecuteDeviceActionAsync("wake", device.OnStartup, device.IP).ConfigureAwait(false);
+        }
+
+        private async Task EnsureFactoryAndExecuteForDeviceAsync(string action, string deviceIp, TimeSpan connectionTimeout = default)
+        {
+            if (connectionTimeout == default)
+                connectionTimeout = TimeSpan.FromSeconds(3);
+
             if (string.IsNullOrWhiteSpace(Settings.Username) ||
                 string.IsNullOrWhiteSpace(Settings.Password))
             {
@@ -172,12 +202,15 @@ namespace LeonB.Tapo
             }
 
             tapo = new TapoDevices.TapoDeviceFactory(Settings.Username, Settings.Password);
-            await ExecutePlugActionForDeviceAsync(action, deviceIp).ConfigureAwait(false);
+            await ExecutePlugActionForDeviceAsync(action, deviceIp, connectionTimeout).ConfigureAwait(false);
         }
 
-        private async Task ExecutePlugActionForDeviceAsync(string action, string deviceIp)
+        private async Task ExecutePlugActionForDeviceAsync(string action, string deviceIp, TimeSpan connectionTimeout = default)
         {
-            using (var plug = await ConnectPlugAsync(deviceIp).ConfigureAwait(false))
+            if (connectionTimeout == default)
+                connectionTimeout = TimeSpan.FromSeconds(3);
+
+            using (var plug = await ConnectPlugAsync(deviceIp, connectionTimeout).ConfigureAwait(false))
             {
                 if (string.Equals(action, "On", StringComparison.OrdinalIgnoreCase))
                 {
@@ -215,9 +248,12 @@ namespace LeonB.Tapo
             }
         }
 
-        private async Task<TapoPlug> ConnectPlugAsync(string deviceIp)
+        private async Task<TapoPlug> ConnectPlugAsync(string deviceIp, TimeSpan connectionTimeout = default)
         {
-            var plug = tapo.CreatePlug(deviceIp, TimeSpan.FromSeconds(3));
+            if (connectionTimeout == default)
+                connectionTimeout = TimeSpan.FromSeconds(3);
+
+            var plug = tapo.CreatePlug(deviceIp, connectionTimeout);
             Exception klapException = null;
 
             try
@@ -240,7 +276,7 @@ namespace LeonB.Tapo
                 SimHub.Logging.Current.Warn("Tapo KLAP connection failed, retrying with legacy protocol: " + ex.Message);
             }
 
-            plug = tapo.CreatePlug(deviceIp, TimeSpan.FromSeconds(3));
+            plug = tapo.CreatePlug(deviceIp, connectionTimeout);
             try
             {
                 await plug.ConnectOldAsync().ConfigureAwait(false);
