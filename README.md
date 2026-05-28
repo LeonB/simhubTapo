@@ -107,6 +107,7 @@ If the legacy protocol reports a response like `<html><body><center>200 OK</cent
 - **Keep discovery results visible after selection** — Clicking a discovered device fills the form but dismisses the list. If you want to add multiple devices from one scan you have to re-scan each time.
 - **Device list readability** — Each saved device is rendered as a single long line. A two-line layout (name and IP on the first line, MAC and lifecycle settings on a smaller second line) would be easier to scan with several devices configured.
 - **Per-device reachability indicator** — The device list shows no indication of whether a device is currently reachable. A small status indicator (populated during the network scan or on plugin startup) would make misconfigured or offline devices immediately visible.
+- **Cloud API device discovery** — In addition to local UDP broadcast, support fetching the device list from the Tapo cloud API using the configured credentials. This would surface devices that are not reachable via local network scan (e.g. on a different subnet) and pre-populate their names and IP addresses.
 
 ## Vendored Library
 
