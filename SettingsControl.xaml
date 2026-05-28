@@ -116,7 +116,15 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{Binding}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <TextBlock>
+                                                    <Run FontWeight="SemiBold" Text="{Binding Name, Mode=OneWay}"/>
+                                                    <Run Text="  "/>
+                                                    <Run Foreground="Gray" Text="{Binding IP, Mode=OneWay}"/>
+                                                </TextBlock>
+                                                <TextBlock FontSize="11" Foreground="Gray" Margin="0,1,0,0"
+                                                           Text="{Binding Details, Mode=OneWay}"/>
+                                            </StackPanel>
                                             <Button Grid.Column="1" VerticalAlignment="Center"
                                                     Background="Transparent" BorderThickness="0" Cursor="Hand"
                                                     Tag="{Binding}" Click="DeleteDevice_Click">

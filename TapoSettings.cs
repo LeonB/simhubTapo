@@ -10,6 +10,18 @@ namespace LeonB.Tapo
         public string OnStartup { get; set; } = "";
         public string OnShutdown { get; set; } = "";
 
+        public string Details
+        {
+            get
+            {
+                var parts = new List<string>();
+                if (!string.IsNullOrEmpty(OnStartup)) parts.Add("Startup: " + OnStartup);
+                if (!string.IsNullOrEmpty(OnShutdown)) parts.Add("Shutdown: " + OnShutdown);
+                if (!string.IsNullOrEmpty(MAC)) parts.Add("MAC: " + MAC);
+                return string.Join("   ", parts);
+            }
+        }
+
         public override string ToString()
         {
             var startup = string.IsNullOrEmpty(OnStartup) ? "-" : OnStartup;
