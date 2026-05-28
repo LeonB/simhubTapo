@@ -107,7 +107,15 @@ If the legacy protocol reports a response like `<html><body><center>200 OK</cent
 - **Keep discovery results visible after selection** — Clicking a discovered device fills the form but dismisses the list. If you want to add multiple devices from one scan you have to re-scan each time.
 - **Device list readability** — Each saved device is rendered as a single long line. A two-line layout (name and IP on the first line, MAC and lifecycle settings on a smaller second line) would be easier to scan with several devices configured.
 - **Per-device reachability indicator** — The device list shows no indication of whether a device is currently reachable. A small status indicator (populated during the network scan or on plugin startup) would make misconfigured or offline devices immediately visible.
-- **Cloud API device discovery** — In addition to local UDP broadcast, support fetching the device list from the Tapo cloud API using the configured credentials. This would surface devices that are not reachable via local network scan (e.g. on a different subnet) and pre-populate their names and IP addresses.
+- **Cloud API device discovery** — In addition to local UDP broadcast, support fetching the device list from the Tapo cloud API using the configured credentials. The cloud API returns each device's alias, MAC address, model, and type — but **not** its local IP address. The intended integration is to correlate cloud results with local scan results by MAC address: the UDP scan finds IPs, the cloud provides aliases. This means cloud discovery adds value when used alongside the existing scan, not as a standalone replacement.
+
+  **Implementation notes (for when this is built):**
+  - Endpoint: `POST https://wap.tplinkcloud.com` for all calls (single path, method in JSON body). Regional variants exist (`eu-wap`, `use1-wap`, `aps1-wap`) but the global endpoint works for device listing.
+  - Step 1 — login: `{ "method": "login", "params": { "appType": "Kasa_Android", "cloudUserName": "...", "cloudPassword": "...", "terminalUUID": "<any-uuid-v4>" } }` → returns `result.token`.
+  - Step 2 — list devices: `{ "method": "getDeviceList", "params": { "token": "..." } }` → returns `result.deviceList[]` with fields: `alias`, `deviceMac`, `deviceModel`, `deviceType`, `deviceId`, `appServerUrl`, `status`.
+  - Filter to plugs by `deviceType == "SMART.TAPOPLUG"`.
+  - No new dependencies needed — plain `HttpClient` + `System.Text.Json`, same as the rest of the library. New class `TapoCloudClient` with `LoginAsync` and `GetDeviceListAsync`.
+  - **Caveats:** unofficial/undocumented API (TP-Link can change it without notice); rate-limited (error `-20004` if called too often — fine for one-shot settings UI use, not for polling); requires internet access.
 
 ## Vendored Library
 
