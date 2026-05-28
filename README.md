@@ -91,7 +91,6 @@ If the legacy protocol reports a response like `<html><body><center>200 OK</cent
 
 ## Planned Improvements
 
-- **IP format validation** — The IP field currently only checks that the value is non-empty and unique. Invalid addresses (e.g. `192.168.1` or `999.0.0.1`) pass silently and only fail at connection time.
 - **Test button** — No way to verify a device responds from within the settings UI. A Test button in the device form that briefly toggles the plug would confirm the connection before binding it to SimHub events.
 - **Credential check before any device is saved** — The automatic credential check requires at least one device to be configured; if you are setting up credentials for the first time there is no feedback. The check should also be usable against the IP currently typed in the form.
 - **Keep discovery results visible after selection** — Clicking a discovered device fills the form but dismisses the list. If you want to add multiple devices from one scan you have to re-scan each time.

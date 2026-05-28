@@ -178,6 +178,13 @@ namespace LeonB.Tapo
                 return;
             }
 
+            if (!IsValidIpv4(ip))
+            {
+                tbIPError.Text = "Enter a valid IPv4 address (e.g. 192.168.1.100).";
+                tbIPError.Visibility = Visibility.Visible;
+                return;
+            }
+
             var ipInUse = Plugin.Settings.Devices.Any(d =>
                 string.Equals(d.IP, ip, StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(d.Name, _editingName, StringComparison.OrdinalIgnoreCase));
@@ -550,6 +557,17 @@ namespace LeonB.Tapo
         private static string NormalizeIp(string ip)
         {
             return string.IsNullOrWhiteSpace(ip) ? "" : ip.Trim();
+        }
+
+        private static bool IsValidIpv4(string ip)
+        {
+            var parts = ip.Split('.');
+            if (parts.Length != 4) return false;
+            foreach (var part in parts)
+            {
+                if (!int.TryParse(part, out var n) || n < 0 || n > 255) return false;
+            }
+            return true;
         }
     }
 }
