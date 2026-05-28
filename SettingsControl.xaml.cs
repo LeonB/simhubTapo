@@ -398,8 +398,6 @@ namespace LeonB.Tapo
             _pendingMac = device.MAC;
             _pendingMacForIp = device.IP;
             UpdateMacDisplay(device.MAC);
-
-            lbDiscovered.SelectedItem = null;
         }
 
         private class DiscoveredPlugInfo
