@@ -164,8 +164,9 @@ namespace LeonB.Tapo
                 return false;
             }
 
+            string nameLocal = name;
             if (Plugin.Settings.Devices.Any(d =>
-                string.Equals(d.Name, name, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(d.Name, nameLocal, StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(d.Name, _editingName, StringComparison.OrdinalIgnoreCase)))
             {
                 tbNameError.Text = "Name is already in use.";
@@ -190,8 +191,9 @@ namespace LeonB.Tapo
                 return false;
             }
 
+            string ipLocal = ip;
             if (Plugin.Settings.Devices.Any(d =>
-                string.Equals(d.IP, ip, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(d.IP, ipLocal, StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(d.Name, _editingName, StringComparison.OrdinalIgnoreCase)))
             {
                 tbIPError.Text = "IP is already in use.";
