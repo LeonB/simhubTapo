@@ -13,6 +13,7 @@ The plugin connects to Tapo devices on your local network using your Tapo accoun
   - `{Name} Off`
   - `{Name} Toggle`
 - Per-device startup and shutdown actions (on SimHub start/stop)
+- Per-device reachability indicator in the settings UI (colored dot, checked on startup and on demand)
 - Local network control through the included `tapo-devices` library
 - Post-build copy step for installing the plugin into the SimHub folder
 
@@ -45,7 +46,7 @@ In the SimHub plugin settings, enter:
 - `User`: your Tapo account email or username
 - `Password`: your Tapo account password
 
-For each Tapo device, fill in a unique `Name`, its local `IP` address, and optionally the actions to run `On Startup` and `On Shutdown`. Click `Add Device` to save. Click a saved device to edit it, or click the trash icon next to it to remove it. For best results, reserve plug IP addresses in your router so they do not change.
+For each Tapo device, fill in a unique `Name`, its local `IP` address, and optionally the actions to run `On Startup` and `On Shutdown`. Click `Test` next to the IP field to check whether the device is reachable before saving. Click `Add Device` to save. Each saved device shows a colored dot (green = reachable, red = unreachable, gray = unchecked) and a refresh icon button to re-run the check at any time. Click a saved device to edit it, or click the trash icon next to it to remove it. For best results, reserve plug IP addresses in your router so they do not change.
 
 ## Building
 
@@ -90,9 +91,7 @@ If the legacy protocol reports a response like `<html><body><center>200 OK</cent
 
 ## Planned Improvements
 
-- **Test button** — No way to verify a device responds from within the settings UI. A Test button in the device form that briefly toggles the plug would confirm the connection before binding it to SimHub events.
-- **Credential check before any device is saved** — The automatic credential check requires at least one device to be configured; if you are setting up credentials for the first time there is no feedback. The check should also be usable against the IP currently typed in the form.
-- **Per-device reachability indicator** — The device list shows no indication of whether a device is currently reachable. A small status indicator (populated during the network scan or on plugin startup) would make misconfigured or offline devices immediately visible.
+- **Full credential test** — The Test button checks TCP reachability (port 80) but does not verify credentials. A deeper test that attempts a full KLAP handshake and briefly reads device info would confirm that username, password, and IP are all correct before the device is saved.
 - **Cloud API device discovery** — In addition to local UDP broadcast, support fetching the device list from the Tapo cloud API using the configured credentials. The cloud API returns each device's alias, MAC address, model, and type — but **not** its local IP address. The intended integration is to correlate cloud results with local scan results by MAC address: the UDP scan finds IPs, the cloud provides aliases. This means cloud discovery adds value when used alongside the existing scan, not as a standalone replacement.
 
   **Implementation notes (for when this is built):**
