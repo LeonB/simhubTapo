@@ -1,9 +1,26 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace LeonB.Tapo
 {
-    public class TapoDeviceConfig
+    public enum ReachabilityStatus { Unknown, Reachable, Unreachable }
+
+    public class TapoDeviceConfig : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private ReachabilityStatus _reachability;
+        public ReachabilityStatus Reachability
+        {
+            get { return _reachability; }
+            set
+            {
+                if (_reachability == value) return;
+                _reachability = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Reachability"));
+            }
+        }
+
         public string Name { get; set; } = "";
         public string IP { get; set; } = "";
         public string MAC { get; set; } = "";

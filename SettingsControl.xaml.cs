@@ -218,6 +218,7 @@ namespace LeonB.Tapo
                     Plugin.RegisterDeviceActions(existing.Name, existing.IP);
                     if (string.IsNullOrEmpty(existing.MAC))
                         FetchAndUpdateMacAsync(existing);
+                    _ = CheckDeviceReachabilityAsync(existing);
                 }
             }
             else if (!Plugin.Settings.Devices.Any(d => string.Equals(d.IP, ip, StringComparison.OrdinalIgnoreCase)))
@@ -234,6 +235,7 @@ namespace LeonB.Tapo
                 Plugin.RegisterDeviceActions(device.Name, device.IP);
                 if (string.IsNullOrEmpty(device.MAC))
                     FetchAndUpdateMacAsync(device);
+                _ = CheckDeviceReachabilityAsync(device);
             }
 
             Plugin.SyncLegacyFields();
@@ -459,6 +461,7 @@ namespace LeonB.Tapo
             tbNameError.Visibility = Visibility.Collapsed;
             tbIP.Text = "";
             tbIPError.Visibility = Visibility.Collapsed;
+            ellFormReachability.Fill = Brushes.DarkGray;
             UpdateMacDisplay("");
             SelectComboBoxItem(cbAddOnStartup, "");
             SelectComboBoxItem(cbAddOnShutdown, "");
@@ -566,6 +569,48 @@ namespace LeonB.Tapo
                 if (!int.TryParse(part, out var n) || n < 0 || n > 255) return false;
             }
             return true;
+        }
+
+        private static async Task CheckDeviceReachabilityAsync(TapoDeviceConfig device)
+        {
+            device.Reachability = ReachabilityStatus.Unknown;
+            device.Reachability = await Tapoer.IsDeviceReachableAsync(device.IP)
+                ? ReachabilityStatus.Reachable
+                : ReachabilityStatus.Unreachable;
+        }
+
+        private async void TestDevice_Click(object sender, RoutedEventArgs e)
+        {
+            if (!((sender as FrameworkElement)?.Tag is TapoDeviceConfig device)) return;
+            await CheckDeviceReachabilityAsync(device);
+        }
+
+        private async void TestFormDevice_Click(object sender, RoutedEventArgs e)
+        {
+            var ip = tbIP.Text.Trim();
+            if (string.IsNullOrEmpty(ip)) return;
+            ellFormReachability.Fill = Brushes.DarkGray;
+            var reachable = await Tapoer.IsDeviceReachableAsync(ip);
+            ellFormReachability.Fill = reachable ? Brushes.LimeGreen : Brushes.Red;
+        }
+    }
+
+    internal class ReachabilityToBrushConverter : System.Windows.Data.IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (!(value is ReachabilityStatus status)) return Brushes.DarkGray;
+            switch (status)
+            {
+                case ReachabilityStatus.Reachable:   return Brushes.LimeGreen;
+                case ReachabilityStatus.Unreachable: return Brushes.Red;
+                default:                             return Brushes.DarkGray;
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -8,6 +8,10 @@
              xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins"
              d:DesignHeight="300" d:DesignWidth="300">
 
+    <UserControl.Resources>
+        <local:ReachabilityToBrushConverter x:Key="ReachabilityToBrushConverter"/>
+    </UserControl.Resources>
+
     <ScrollViewer>
         <Grid>
             <StackPanel>
@@ -74,6 +78,9 @@
                                 <TextBox Name="tbIP" Width="200"/>
                                 <TextBlock Name="tbIPError" Foreground="Red" Visibility="Collapsed"/>
                             </StackPanel>
+                            <Ellipse Name="ellFormReachability" Width="8" Height="8" Margin="8,0,4,0"
+                                     VerticalAlignment="Center" Fill="DarkGray"/>
+                            <Button Content="Test" Click="TestFormDevice_Click" VerticalAlignment="Center"/>
                         </StackPanel>
 
                         <StackPanel x:Name="pnlMac" Orientation="Horizontal" Visibility="Collapsed">
@@ -117,10 +124,15 @@
                             <DataTemplate>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <Ellipse Grid.Column="0" Width="8" Height="8" Margin="0,0,8,0"
+                                             VerticalAlignment="Center"
+                                             Fill="{Binding Reachability, Mode=OneWay, Converter={StaticResource ReachabilityToBrushConverter}}"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock>
                                             <Run FontWeight="SemiBold" Text="{Binding Name, Mode=OneWay}"/>
                                             <Run Text="  "/>
@@ -129,7 +141,13 @@
                                         <TextBlock FontSize="11" Foreground="Gray" Margin="0,1,0,0"
                                                    Text="{Binding Details, Mode=OneWay}"/>
                                     </StackPanel>
-                                    <Button Grid.Column="1" VerticalAlignment="Center"
+                                    <Button Grid.Column="2" VerticalAlignment="Center"
+                                            Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                            Tag="{Binding}" Click="TestDevice_Click"
+                                            ToolTip="Test reachability">
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="14" Text="&#xE8FB;"/>
+                                    </Button>
+                                    <Button Grid.Column="3" VerticalAlignment="Center"
                                             Background="Transparent" BorderThickness="0" Cursor="Hand"
                                             Tag="{Binding}" Click="DeleteDevice_Click">
                                         <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="14" Text="&#xE74D;"/>

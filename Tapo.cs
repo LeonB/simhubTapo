@@ -4,6 +4,7 @@ using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using TapoDevices;
 
@@ -81,6 +82,8 @@ namespace LeonB.Tapo
                 RegisterDeviceActions(device.Name, device.IP);
                 _ = ExecuteDeviceActionAsync("startup", device.OnStartup, device.IP);
             }
+
+            _ = CheckAllDevicesReachabilityAsync();
         }
 
         private void OnPowerModeChanged(object _, PowerModeChangedEventArgs e)
@@ -292,6 +295,39 @@ namespace LeonB.Tapo
                     legacyException.Message,
                     legacyException);
             }
+        }
+
+        internal static async Task<bool> IsDeviceReachableAsync(string ip)
+        {
+            using (var client = new TcpClient())
+            {
+                try
+                {
+                    var connectTask = client.ConnectAsync(ip, 80);
+                    if (await Task.WhenAny(connectTask, Task.Delay(1000)) != connectTask)
+                        return false;
+                    return client.Connected;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
+        private async Task CheckAllDevicesReachabilityAsync()
+        {
+            if (Settings?.Devices == null) return;
+            var tasks = Settings.Devices
+                .Where(d => !string.IsNullOrEmpty(d.IP))
+                .Select(async d =>
+                {
+                    d.Reachability = await IsDeviceReachableAsync(d.IP)
+                        ? ReachabilityStatus.Reachable
+                        : ReachabilityStatus.Unreachable;
+                })
+                .ToList();
+            await Task.WhenAll(tasks);
         }
 
         private static bool IsForbiddenResponse(Exception ex)
