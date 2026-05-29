@@ -79,123 +79,32 @@ namespace LeonB.Tapo
             tbCredentialStatus.Foreground = new SolidColorBrush(Colors.Gray);
 
             var factory = new TapoDeviceFactory(Plugin.Settings.Username, Plugin.Settings.Password);
-            var plug = factory.CreatePlug(device.IP, TimeSpan.FromSeconds(3));
-
-            bool success = false;
-            bool authFailed = false;
-            bool connectionFailed = false;
-
-            try
-            {
-                await plug.ConnectAsync();
-                success = true;
-            }
-            catch (Exception klapEx)
-            {
-                plug.Dispose();
-                plug = null;
-                if (IsForbiddenResponse(klapEx))
-                {
-                    authFailed = true;
-                }
-                else
-                {
-                    plug = factory.CreatePlug(device.IP, TimeSpan.FromSeconds(3));
-                    try
-                    {
-                        await plug.ConnectOldAsync();
-                        success = true;
-                    }
-                    catch (Exception legacyEx)
-                    {
-                        plug.Dispose();
-                        plug = null;
-                        if (IsForbiddenResponse(legacyEx))
-                            authFailed = true;
-                        else
-                            connectionFailed = true;
-                    }
-                }
-            }
-
-            plug?.Dispose();
+            var result = await TryConnectPlugAsync(factory, device.IP);
+            result.Plug?.Dispose();
 
             if (token.IsCancellationRequested) return;
 
-            if (success)
+            if (result.Success)
             {
                 tbCredentialStatus.Text = "✓ Credentials OK";
                 tbCredentialStatus.Foreground = new SolidColorBrush(Colors.Green);
             }
-            else if (authFailed)
+            else if (result.AuthFailed)
             {
                 tbCredentialStatus.Text = "✗ Authentication failed";
                 tbCredentialStatus.Foreground = new SolidColorBrush(Colors.Red);
             }
-            else if (connectionFailed)
+            else
             {
                 tbCredentialStatus.Text = "✗ Could not connect — check credentials";
                 tbCredentialStatus.Foreground = new SolidColorBrush(Colors.OrangeRed);
-            }
-            else
-            {
-                tbCredentialStatus.Text = "";
             }
         }
 
         private void AddDevice_Click(object sender, RoutedEventArgs e)
         {
-            if (Plugin == null)
-            {
-                return;
-            }
-
-            var name = tbName.Text.Trim();
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                tbNameError.Text = "Name is required.";
-                tbNameError.Visibility = Visibility.Visible;
-                return;
-            }
-
-            var nameInUse = Plugin.Settings.Devices.Any(d =>
-                string.Equals(d.Name, name, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(d.Name, _editingName, StringComparison.OrdinalIgnoreCase));
-            if (nameInUse)
-            {
-                tbNameError.Text = "Name is already in use.";
-                tbNameError.Visibility = Visibility.Visible;
-                return;
-            }
-
-            tbNameError.Visibility = Visibility.Collapsed;
-
-            var ip = NormalizeIp(tbIP.Text);
-            if (string.IsNullOrWhiteSpace(ip))
-            {
-                tbIPError.Text = "IP is required.";
-                tbIPError.Visibility = Visibility.Visible;
-                return;
-            }
-
-            if (!IsValidIpv4(ip))
-            {
-                tbIPError.Text = "Enter a valid IPv4 address (e.g. 192.168.1.100).";
-                tbIPError.Visibility = Visibility.Visible;
-                return;
-            }
-
-            var ipInUse = Plugin.Settings.Devices.Any(d =>
-                string.Equals(d.IP, ip, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(d.Name, _editingName, StringComparison.OrdinalIgnoreCase));
-            if (ipInUse)
-            {
-                tbIPError.Text = "IP is already in use.";
-                tbIPError.Visibility = Visibility.Visible;
-                return;
-            }
-
-            tbIPError.Visibility = Visibility.Collapsed;
+            if (Plugin == null) return;
+            if (!ValidateDeviceForm(out var name, out var ip)) return;
 
             Plugin.NormalizeDeviceSettings();
 
@@ -241,6 +150,57 @@ namespace LeonB.Tapo
             Plugin.SyncLegacyFields();
             ResetAddForm();
             RefreshDeviceList();
+        }
+
+        private bool ValidateDeviceForm(out string name, out string ip)
+        {
+            name = tbName.Text.Trim();
+            ip = "";
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                tbNameError.Text = "Name is required.";
+                tbNameError.Visibility = Visibility.Visible;
+                return false;
+            }
+
+            if (Plugin.Settings.Devices.Any(d =>
+                string.Equals(d.Name, name, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(d.Name, _editingName, StringComparison.OrdinalIgnoreCase)))
+            {
+                tbNameError.Text = "Name is already in use.";
+                tbNameError.Visibility = Visibility.Visible;
+                return false;
+            }
+
+            tbNameError.Visibility = Visibility.Collapsed;
+
+            ip = NormalizeIp(tbIP.Text);
+            if (string.IsNullOrWhiteSpace(ip))
+            {
+                tbIPError.Text = "IP is required.";
+                tbIPError.Visibility = Visibility.Visible;
+                return false;
+            }
+
+            if (!IsValidIpv4(ip))
+            {
+                tbIPError.Text = "Enter a valid IPv4 address (e.g. 192.168.1.100).";
+                tbIPError.Visibility = Visibility.Visible;
+                return false;
+            }
+
+            if (Plugin.Settings.Devices.Any(d =>
+                string.Equals(d.IP, ip, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(d.Name, _editingName, StringComparison.OrdinalIgnoreCase)))
+            {
+                tbIPError.Text = "IP is already in use.";
+                tbIPError.Visibility = Visibility.Visible;
+                return false;
+            }
+
+            tbIPError.Visibility = Visibility.Collapsed;
+            return true;
         }
 
         private async void Discover_Click(object sender, RoutedEventArgs e)
@@ -309,40 +269,19 @@ namespace LeonB.Tapo
 
         private static async Task<FetchResult> FetchPlugInfoAsync(TapoDeviceFactory factory, DiscoveredDevice raw)
         {
-            TapoPlug plug = null;
+            var result = await TryConnectPlugAsync(factory, raw.IP).ConfigureAwait(false);
 
-            var klapPlug = factory.CreatePlug(raw.IP, TimeSpan.FromSeconds(3));
-            try
-            {
-                await klapPlug.ConnectAsync().ConfigureAwait(false);
-                plug = klapPlug;
-            }
-            catch (Exception klapEx)
-            {
-                klapPlug.Dispose();
-                if (IsForbiddenResponse(klapEx))
-                    return AuthFailedResult(raw);
+            if (result.AuthFailed)
+                return AuthFailedResult(raw);
 
-                var legacyPlug = factory.CreatePlug(raw.IP, TimeSpan.FromSeconds(3));
-                try
-                {
-                    await legacyPlug.ConnectOldAsync().ConfigureAwait(false);
-                    plug = legacyPlug;
-                }
-                catch (Exception legacyEx)
-                {
-                    legacyPlug.Dispose();
-                    if (IsForbiddenResponse(legacyEx))
-                        return AuthFailedResult(raw);
-                    return LooksLikePlug(raw.Model) ? AuthFailedResult(raw) : new FetchResult();
-                }
-            }
+            if (!result.Success)
+                return LooksLikePlug(raw.Model) ? AuthFailedResult(raw) : new FetchResult();
 
-            using (plug)
+            using (result.Plug)
             {
                 try
                 {
-                    var info = await plug.GetInfoAsync().ConfigureAwait(false);
+                    var info = await result.Plug.GetInfoAsync().ConfigureAwait(false);
                     if (info.Type == null || info.Type.IndexOf("PLUG", StringComparison.OrdinalIgnoreCase) < 0)
                         return new FetchResult();
 
@@ -369,17 +308,6 @@ namespace LeonB.Tapo
         {
             return !string.IsNullOrEmpty(model) && model.Length >= 2
                 && (model[0] == 'P' || model[0] == 'p') && char.IsDigit(model[1]);
-        }
-
-        private static bool IsForbiddenResponse(Exception ex)
-        {
-            while (ex != null)
-            {
-                if (ex.Message.Contains("403") || ex.Message.Contains("Forbidden"))
-                    return true;
-                ex = ex.InnerException;
-            }
-            return false;
         }
 
         private class FetchResult
@@ -494,35 +422,14 @@ namespace LeonB.Tapo
         private async void FetchAndUpdateMacAsync(TapoDeviceConfig device)
         {
             var factory = new TapoDeviceFactory(Plugin.Settings.Username, Plugin.Settings.Password);
-            TapoPlug plug = null;
+            var result = await TryConnectPlugAsync(factory, device.IP, TimeSpan.FromSeconds(5));
+            if (!result.Success) return;
 
-            var klapPlug = factory.CreatePlug(device.IP, TimeSpan.FromSeconds(5));
-            try
-            {
-                await klapPlug.ConnectAsync();
-                plug = klapPlug;
-            }
-            catch
-            {
-                klapPlug.Dispose();
-                var legacyPlug = factory.CreatePlug(device.IP, TimeSpan.FromSeconds(5));
-                try
-                {
-                    await legacyPlug.ConnectOldAsync();
-                    plug = legacyPlug;
-                }
-                catch
-                {
-                    legacyPlug.Dispose();
-                    return;
-                }
-            }
-
-            using (plug)
+            using (result.Plug)
             {
                 try
                 {
-                    var info = await plug.GetInfoAsync();
+                    var info = await result.Plug.GetInfoAsync();
                     if (!string.IsNullOrWhiteSpace(info.MacAddress))
                     {
                         device.MAC = info.MacAddress;
@@ -585,6 +492,44 @@ namespace LeonB.Tapo
             await CheckDeviceReachabilityAsync(device);
         }
 
+        private static async Task<ConnectResult> TryConnectPlugAsync(TapoDeviceFactory factory, string ip, TimeSpan timeout = default)
+        {
+            if (timeout == default)
+                timeout = TimeSpan.FromSeconds(3);
+
+            var plug = factory.CreatePlug(ip, timeout);
+            try
+            {
+                await plug.ConnectAsync().ConfigureAwait(false);
+                return new ConnectResult { Plug = plug };
+            }
+            catch (Exception klapEx)
+            {
+                plug.Dispose();
+                if (Tapoer.IsForbiddenResponse(klapEx))
+                    return new ConnectResult { AuthFailed = true };
+
+                plug = factory.CreatePlug(ip, timeout);
+                try
+                {
+                    await plug.ConnectOldAsync().ConfigureAwait(false);
+                    return new ConnectResult { Plug = plug };
+                }
+                catch (Exception legacyEx)
+                {
+                    plug.Dispose();
+                    return new ConnectResult { AuthFailed = Tapoer.IsForbiddenResponse(legacyEx) };
+                }
+            }
+        }
+
+        private class ConnectResult
+        {
+            public TapoPlug Plug { get; set; }
+            public bool AuthFailed { get; set; }
+            public bool Success { get { return Plug != null; } }
+        }
+
         private async void TestFormDevice_Click(object sender, RoutedEventArgs e)
         {
             var ip = tbIP.Text.Trim();
@@ -593,47 +538,12 @@ namespace LeonB.Tapo
             ellFormReachability.Fill = Brushes.DarkGray;
 
             var factory = new TapoDeviceFactory(Plugin.Settings.Username, Plugin.Settings.Password);
-            TapoPlug plug = null;
-            bool success = false;
-            bool authFailed = false;
+            var result = await TryConnectPlugAsync(factory, ip);
+            result.Plug?.Dispose();
 
-            plug = factory.CreatePlug(ip, TimeSpan.FromSeconds(3));
-            try
-            {
-                await plug.ConnectAsync();
-                success = true;
-            }
-            catch (Exception klapEx)
-            {
-                plug.Dispose();
-                plug = null;
-                if (IsForbiddenResponse(klapEx))
-                {
-                    authFailed = true;
-                }
-                else
-                {
-                    plug = factory.CreatePlug(ip, TimeSpan.FromSeconds(3));
-                    try
-                    {
-                        await plug.ConnectOldAsync();
-                        success = true;
-                    }
-                    catch (Exception legacyEx)
-                    {
-                        plug.Dispose();
-                        plug = null;
-                        if (IsForbiddenResponse(legacyEx))
-                            authFailed = true;
-                    }
-                }
-            }
-
-            plug?.Dispose();
-
-            ellFormReachability.Fill = success    ? Brushes.LimeGreen
-                                     : authFailed ? Brushes.Red
-                                                  : Brushes.OrangeRed;
+            ellFormReachability.Fill = result.Success    ? Brushes.LimeGreen
+                                     : result.AuthFailed ? Brushes.Red
+                                                         : Brushes.OrangeRed;
         }
     }
 

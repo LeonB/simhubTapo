@@ -330,7 +330,7 @@ namespace LeonB.Tapo
             await Task.WhenAll(tasks);
         }
 
-        private static bool IsForbiddenResponse(Exception ex)
+        internal static bool IsForbiddenResponse(Exception ex)
         {
             while (ex != null)
             {
