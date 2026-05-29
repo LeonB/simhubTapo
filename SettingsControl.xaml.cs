@@ -589,9 +589,51 @@ namespace LeonB.Tapo
         {
             var ip = tbIP.Text.Trim();
             if (string.IsNullOrEmpty(ip)) return;
+
             ellFormReachability.Fill = Brushes.DarkGray;
-            var reachable = await Tapoer.IsDeviceReachableAsync(ip);
-            ellFormReachability.Fill = reachable ? Brushes.LimeGreen : Brushes.Red;
+
+            var factory = new TapoDeviceFactory(Plugin.Settings.Username, Plugin.Settings.Password);
+            TapoPlug plug = null;
+            bool success = false;
+            bool authFailed = false;
+
+            plug = factory.CreatePlug(ip, TimeSpan.FromSeconds(3));
+            try
+            {
+                await plug.ConnectAsync();
+                success = true;
+            }
+            catch (Exception klapEx)
+            {
+                plug.Dispose();
+                plug = null;
+                if (IsForbiddenResponse(klapEx))
+                {
+                    authFailed = true;
+                }
+                else
+                {
+                    plug = factory.CreatePlug(ip, TimeSpan.FromSeconds(3));
+                    try
+                    {
+                        await plug.ConnectOldAsync();
+                        success = true;
+                    }
+                    catch (Exception legacyEx)
+                    {
+                        plug.Dispose();
+                        plug = null;
+                        if (IsForbiddenResponse(legacyEx))
+                            authFailed = true;
+                    }
+                }
+            }
+
+            plug?.Dispose();
+
+            ellFormReachability.Fill = success    ? Brushes.LimeGreen
+                                     : authFailed ? Brushes.Red
+                                                  : Brushes.OrangeRed;
         }
     }
 

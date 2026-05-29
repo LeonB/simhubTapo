@@ -91,7 +91,6 @@ If the legacy protocol reports a response like `<html><body><center>200 OK</cent
 
 ## Planned Improvements
 
-- **Full credential test** — The Test button checks TCP reachability (port 80) but does not verify credentials. A deeper test that attempts a full KLAP handshake and briefly reads device info would confirm that username, password, and IP are all correct before the device is saved.
 - **Cloud API device discovery** — In addition to local UDP broadcast, support fetching the device list from the Tapo cloud API using the configured credentials. The cloud API returns each device's alias, MAC address, model, and type — but **not** its local IP address. The intended integration is to correlate cloud results with local scan results by MAC address: the UDP scan finds IPs, the cloud provides aliases. This means cloud discovery adds value when used alongside the existing scan, not as a standalone replacement.
 
   **Implementation notes (for when this is built):**
