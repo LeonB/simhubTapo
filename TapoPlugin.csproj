@@ -140,6 +140,11 @@
   <Target Name="CopyToSimHub" AfterTargets="MergeAssemblies" Condition="'$(SIMHUB_INSTALL_PATH)' != '' AND '$(Configuration)' == 'Release'">
     <Exec Command="XCOPY /Y /R &quot;$(TargetPath)&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
   </Target>
+
+  <Target Name="CopyToSimHubDebug" AfterTargets="Build" Condition="'$(SIMHUB_INSTALL_PATH)' != '' AND '$(Configuration)' == 'Debug'">
+    <Exec Command="XCOPY /Y /R &quot;$(TargetPath)&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" />
+    <Exec Command="XCOPY /Y /R &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(SIMHUB_INSTALL_PATH)&quot;" IgnoreExitCode="true" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

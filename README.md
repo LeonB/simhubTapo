@@ -65,7 +65,6 @@ The post-build step copies the plugin output and required JSON dependencies into
 If you do not use the post-build step, copy the built files from `bin\Debug` or `bin\Release` into your SimHub install directory:
 
 - `Tapo.dll`
-- `TapoDevices.dll`
 
 Restart SimHub after copying the files.
 
