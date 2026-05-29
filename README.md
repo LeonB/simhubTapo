@@ -89,8 +89,15 @@ If the legacy protocol reports a response like `<html><body><center>200 OK</cent
 
 - Actions are implemented as fire-and-forget async handlers, so connection errors are not surfaced in the UI.
 
-## Planned Improvements
+## Future Improvements
 
+- **Per-session actions** — "On Game Start" and "On Game End" hooks that fire when a SimHub game session begins or ends, rather than only on SimHub process startup/shutdown. More useful for race setups where you want devices to respond to individual sessions.
+- **Action error feedback** — Actions are currently fire-and-forget with errors silently logged. Showing a last-action status (timestamp + success/fail) per device in the settings list would make failures visible without blocking anything.
+- **SimHub data properties** — Expose per-device on/off state and wattage as SimHub properties so they can drive dashboard overlays or other plugin mappings. `GetEnergyUsageAsync()` already exists on `TapoPlug`.
+- **Delayed on/off actions** — Register additional SimHub actions such as `{Name} On in 30s` using `TurnOnWithDelayAsync` / `TurnOffWithDelayAsync`, which are already implemented in the device library.
+- **Energy monitoring** — Surface per-session power consumption data as SimHub properties, allowing overlays or logging of wattage during a race session.
+- **Bulb support** — `TapoBulb` is already present in the vendored library with brightness and colour control. Adding a device-type selector in the settings UI would unlock these devices without any new protocol work.
+- **Device groups** — A named group that maps to multiple devices and registers combined SimHub actions (e.g. `Race Setup On` turns on monitor, fan, and LEDs at once).
 - **Cloud API device discovery** — In addition to local UDP broadcast, support fetching the device list from the Tapo cloud API using the configured credentials. The cloud API returns each device's alias, MAC address, model, and type — but **not** its local IP address. The intended integration is to correlate cloud results with local scan results by MAC address: the UDP scan finds IPs, the cloud provides aliases. This means cloud discovery adds value when used alongside the existing scan, not as a standalone replacement.
 
   **Implementation notes (for when this is built):**
