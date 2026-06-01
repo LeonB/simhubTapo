@@ -108,6 +108,26 @@
                             </ComboBox>
                         </StackPanel>
 
+                        <StackPanel Orientation="Horizontal">
+                            <Label Width="200">On Game Start:</Label>
+                            <ComboBox Name="cbAddOnGameStart" Width="200">
+                                <ComboBoxItem IsSelected="True"></ComboBoxItem>
+                                <ComboBoxItem>On</ComboBoxItem>
+                                <ComboBoxItem>Off</ComboBoxItem>
+                                <ComboBoxItem>Toggle</ComboBoxItem>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Label Width="200">On Game End:</Label>
+                            <ComboBox Name="cbAddOnGameEnd" Width="200">
+                                <ComboBoxItem IsSelected="True"></ComboBoxItem>
+                                <ComboBoxItem>On</ComboBoxItem>
+                                <ComboBoxItem>Off</ComboBoxItem>
+                                <ComboBoxItem>Toggle</ComboBoxItem>
+                            </ComboBox>
+                        </StackPanel>
+
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                             <Label Width="200"/>
                             <styles:SHButtonPrimary Name="btnAddDevice" HorizontalAlignment="Left" Click="AddDevice_Click">Add Device</styles:SHButtonPrimary>

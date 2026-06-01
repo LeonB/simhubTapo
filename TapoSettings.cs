@@ -26,6 +26,8 @@ namespace LeonB.Tapo
         public string MAC { get; set; } = "";
         public string OnStartup { get; set; } = "";
         public string OnShutdown { get; set; } = "";
+        public string OnGameStart { get; set; } = "";
+        public string OnGameEnd { get; set; } = "";
 
         public string Details
         {
@@ -34,6 +36,8 @@ namespace LeonB.Tapo
                 var parts = new List<string>();
                 if (!string.IsNullOrEmpty(OnStartup)) parts.Add("Startup: " + OnStartup);
                 if (!string.IsNullOrEmpty(OnShutdown)) parts.Add("Shutdown: " + OnShutdown);
+                if (!string.IsNullOrEmpty(OnGameStart)) parts.Add("Game Start: " + OnGameStart);
+                if (!string.IsNullOrEmpty(OnGameEnd)) parts.Add("Game End: " + OnGameEnd);
                 if (!string.IsNullOrEmpty(MAC)) parts.Add("MAC: " + MAC);
                 return string.Join("   ", parts);
             }

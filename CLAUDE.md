@@ -55,6 +55,8 @@ The plugin is a single SimHub plugin class (`Tapoer` in `Tapo.cs`) that implemen
 
 **Lifecycle actions** (`OnStartup`, `OnShutdown`) are per-device. Startup actions fire-and-forget from `Init()`. Shutdown actions block synchronously (up to 10 s) in `End()` via `ExecuteDeviceLifecycleActionsAndWait`.
 
+**Session actions** (`OnGameStart`, `OnGameEnd`) are per-device and fire when a SimHub game session starts or ends. Detection uses a `_gameWasRunning` bool in `DataUpdate`: a `false→true` transition fires `OnGameStart`; `true→false` fires `OnGameEnd`. Both are fire-and-forget.
+
 **Settings UI** (`SettingsControl.xaml` / `SettingsControl.xaml.cs`) manages the device list directly against `Plugin.Settings.Devices`. Selecting a saved device loads it into the form for editing; the `_editingName` field tracks which device is being edited by its name. Device names must be unique. Adding or updating a device calls `Plugin.RegisterDeviceActions` / `Plugin.UnregisterDeviceActions` immediately.
 
 ## Keeping docs up to date

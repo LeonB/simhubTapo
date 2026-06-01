@@ -19,6 +19,7 @@ namespace LeonB.Tapo
         public DataPluginDemoSettings Settings;
 
         private TapoDevices.TapoDeviceFactory tapo;
+        private bool _gameWasRunning;
 
         /// <summary>
         /// Instance of the current plugin manager
@@ -36,6 +37,18 @@ namespace LeonB.Tapo
         /// <param name="data"></param>
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
         {
+            bool running = data.GameRunning;
+            if (running && !_gameWasRunning)
+            {
+                foreach (var device in Settings.Devices)
+                    _ = ExecuteDeviceActionAsync("game-start", device.OnGameStart, device.IP);
+            }
+            else if (!running && _gameWasRunning)
+            {
+                foreach (var device in Settings.Devices)
+                    _ = ExecuteDeviceActionAsync("game-end", device.OnGameEnd, device.IP);
+            }
+            _gameWasRunning = running;
         }
 
         /// <summary>
@@ -390,7 +403,9 @@ namespace LeonB.Tapo
                     IP = string.IsNullOrWhiteSpace(d.IP) ? "" : d.IP.Trim(),
                     MAC = d.MAC ?? "",
                     OnStartup = d.OnStartup ?? "",
-                    OnShutdown = d.OnShutdown ?? ""
+                    OnShutdown = d.OnShutdown ?? "",
+                    OnGameStart = d.OnGameStart ?? "",
+                    OnGameEnd = d.OnGameEnd ?? ""
                 })
                 .Where(d => !string.IsNullOrWhiteSpace(d.IP))
                 .GroupBy(d => d.IP, StringComparer.OrdinalIgnoreCase)

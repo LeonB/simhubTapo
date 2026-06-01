@@ -13,6 +13,7 @@ The plugin connects to Tapo devices on your local network using your Tapo accoun
   - `{Name} Off`
   - `{Name} Toggle`
 - Per-device startup and shutdown actions (on SimHub start/stop)
+- Per-device game session actions (on game start/end)
 - Per-device reachability indicator in the settings UI (colored dot, checked on startup and on demand)
 - Local network control through the included `tapo-devices` library
 - Post-build copy step for installing the plugin into the SimHub folder
@@ -46,7 +47,7 @@ In the SimHub plugin settings, enter:
 - `User`: your Tapo account email or username
 - `Password`: your Tapo account password
 
-For each Tapo device, fill in a unique `Name`, its local `IP` address, and optionally the actions to run `On Startup` and `On Shutdown`. Click `Test` next to the IP field to check whether the device is reachable before saving. Click `Add Device` to save. Each saved device shows a colored dot (green = reachable, red = unreachable, gray = unchecked) and a refresh icon button to re-run the check at any time. Click a saved device to edit it, or click the trash icon next to it to remove it. For best results, reserve plug IP addresses in your router so they do not change.
+For each Tapo device, fill in a unique `Name`, its local `IP` address, and optionally the actions to run `On Startup`, `On Shutdown`, `On Game Start`, and `On Game End`. Click `Test` next to the IP field to check whether the device is reachable before saving. Click `Add Device` to save. Each saved device shows a colored dot (green = reachable, red = unreachable, gray = unchecked) and a refresh icon button to re-run the check at any time. Click a saved device to edit it, or click the trash icon next to it to remove it. For best results, reserve plug IP addresses in your router so they do not change.
 
 ## Building
 
@@ -91,7 +92,6 @@ If the legacy protocol reports a response like `<html><body><center>200 OK</cent
 
 ## Future Improvements
 
-- **Per-session actions** — "On Game Start" and "On Game End" hooks that fire when a SimHub game session begins or ends, rather than only on SimHub process startup/shutdown. More useful for race setups where you want devices to respond to individual sessions.
 - **Action error feedback** — Actions are currently fire-and-forget with errors silently logged. Showing a last-action status (timestamp + success/fail) per device in the settings list would make failures visible without blocking anything.
 - **SimHub data properties** — Expose per-device on/off state and wattage as SimHub properties so they can drive dashboard overlays or other plugin mappings. `GetEnergyUsageAsync()` already exists on `TapoPlug`.
 - **Delayed on/off actions** — Register additional SimHub actions such as `{Name} On in 30s` using `TurnOnWithDelayAsync` / `TurnOffWithDelayAsync`, which are already implemented in the device library.

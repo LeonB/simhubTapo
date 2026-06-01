@@ -124,6 +124,8 @@ namespace LeonB.Tapo
                         existing.MAC = knownMac;
                     existing.OnStartup = GetSelectedComboBoxText(cbAddOnStartup);
                     existing.OnShutdown = GetSelectedComboBoxText(cbAddOnShutdown);
+                    existing.OnGameStart = GetSelectedComboBoxText(cbAddOnGameStart);
+                    existing.OnGameEnd = GetSelectedComboBoxText(cbAddOnGameEnd);
                     Plugin.RegisterDeviceActions(existing.Name, existing.IP);
                     if (string.IsNullOrEmpty(existing.MAC))
                         FetchAndUpdateMacAsync(existing);
@@ -138,7 +140,9 @@ namespace LeonB.Tapo
                     IP = ip,
                     MAC = knownMac,
                     OnStartup = GetSelectedComboBoxText(cbAddOnStartup),
-                    OnShutdown = GetSelectedComboBoxText(cbAddOnShutdown)
+                    OnShutdown = GetSelectedComboBoxText(cbAddOnShutdown),
+                    OnGameStart = GetSelectedComboBoxText(cbAddOnGameStart),
+                    OnGameEnd = GetSelectedComboBoxText(cbAddOnGameEnd)
                 };
                 Plugin.Settings.Devices.Add(device);
                 Plugin.RegisterDeviceActions(device.Name, device.IP);
@@ -371,6 +375,8 @@ namespace LeonB.Tapo
             tbIP.Text = device.IP;
             SelectComboBoxItem(cbAddOnStartup, device.OnStartup);
             SelectComboBoxItem(cbAddOnShutdown, device.OnShutdown);
+            SelectComboBoxItem(cbAddOnGameStart, device.OnGameStart);
+            SelectComboBoxItem(cbAddOnGameEnd, device.OnGameEnd);
             UpdateMacDisplay(device.MAC);
             btnAddDevice.Content = "Update Device";
             btnCancelEdit.Visibility = Visibility.Visible;
@@ -395,6 +401,8 @@ namespace LeonB.Tapo
             UpdateMacDisplay("");
             SelectComboBoxItem(cbAddOnStartup, "");
             SelectComboBoxItem(cbAddOnShutdown, "");
+            SelectComboBoxItem(cbAddOnGameStart, "");
+            SelectComboBoxItem(cbAddOnGameEnd, "");
             btnAddDevice.Content = "Add Device";
             btnCancelEdit.Visibility = Visibility.Collapsed;
         }
